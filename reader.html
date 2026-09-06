@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Read The Problem Setter's Journal online." />
+    <title>Read - The Problem Setter's Journal</title>
+    <link rel="stylesheet" href="reader.css" />
+    <script src="assets/book/reader-data.js" defer></script>
+    <script src="reader.js" defer></script>
+  </head>
+  <body>
+    <main class="reader-shell">
+      <header class="reader-header">
+        <a href="./">The Problem Setter's Journal</a>
+        <span id="page-label">Loading reading edition…</span>
+        <span class="reader-actions">
+          <button id="toc-toggle" type="button" aria-controls="toc-panel" aria-expanded="false">Contents</button>
+          <a href="./">Close reader</a>
+        </span>
+      </header>
+      <aside id="toc-panel" class="toc-panel" aria-label="Table of contents" hidden>
+        <div class="toc-heading"><strong>Contents</strong><button id="toc-close" type="button" aria-label="Close contents">×</button></div>
+        <button class="toc-entry" type="button" data-page="0">Cover <span>1</span></button>
+        <button class="toc-entry" type="button" data-page="2">Contents <span>3</span></button>
+        <section class="toc-group">
+          <button class="toc-entry toc-section" type="button" data-page="4">Preface <span>5</span></button>
+          <div class="toc-subitems">
+            <button type="button" data-page="8">How do I set problems? <span>9</span></button>
+            <button type="button" data-page="12">How to Use This Journal <span>13</span></button>
+          </div>
+        </section>
+        <section class="toc-group">
+          <button class="toc-entry toc-section" type="button" data-page="16">1. The Journey Begins <span>17</span></button>
+          <div class="toc-subitems">
+            <button type="button" data-page="17">1.1 Ambiguous Undecimal System (HKOI 2022/23 Senior) <span>18</span></button>
+            <button type="button" data-page="19">1.2 Arctic Technology (PCOI 2019/20 Team Formation Test) <span>20</span></button>
+            <button type="button" data-page="24">1.3 Repetitive Journey (PCOI 2021/22 Team Formation Test) <span>25</span></button>
+            <button type="button" data-page="29">1.4 Digit Puzzle (HKOI 2024/25 Senior) <span>30</span></button>
+          </div>
+        </section>
+        <section class="toc-group">
+          <button class="toc-entry toc-section" type="button" data-page="36">2. Entering The World of Algorithms <span>37</span></button>
+          <div class="toc-subitems">
+            <button type="button" data-page="37">2.1 Mechanical Grid (HKOI 2022/23 Junior) <span>38</span></button>
+            <button type="button" data-page="44">2.2 Lift Problem (LS-PC Programming Challenge 2023) <span>45</span></button>
+            <button type="button" data-page="48">2.3 Cargo Sorting (Joint School OI Competition 2021/22) <span>49</span></button>
+            <button type="button" data-page="53">2.4 Faultline of the Earthquake (HKOI 2024/25 Senior) <span>54</span></button>
+          </div>
+        </section>
+        <section class="toc-group">
+          <button class="toc-entry toc-section" type="button" data-page="62">3. Towards IOI - The Toolkits <span>63</span></button>
+          <div class="toc-subitems">
+            <button type="button" data-page="63">3.1 Piston (HK Training Team 2024 Mini Comp) <span>64</span></button>
+            <button type="button" data-page="67">3.2 Exciting Auction (HK Training Team 2025 Mini Comp) <span>68</span></button>
+            <button type="button" data-page="71">3.3 Challenge of Hanoi (HK Team Formation Test 2023) <span>72</span></button>
+            <button type="button" data-page="78">3.4 Introvert Seating (HK Team Formation Test 2024) <span>79</span></button>
+          </div>
+        </section>
+        <section class="toc-group">
+          <button class="toc-entry toc-section" type="button" data-page="86">4. Towards IOI - Non-batch Tasks <span>87</span></button>
+          <div class="toc-subitems">
+            <button type="button" data-page="87">4.1 Collaborative Sudoku (HK Training Team 2023 Mini Comp) <span>88</span></button>
+            <button type="button" data-page="90">4.2 Prisoners’ Gamble (HK Training Team 2023 Mini Comp) <span>91</span></button>
+            <button type="button" data-page="96">4.3 Tree Speculation (HK Team Formation Test 2024) <span>97</span></button>
+            <button type="button" data-page="104">4.4 Center of Infinity (PCOI 2022/23 Team Formation Test) <span>105</span></button>
+          </div>
+        </section>
+        <button class="toc-entry" type="button" data-page="112">Postlude <span>113</span></button>
+      </aside>
+      <section id="book-stage" class="book-stage is-single" aria-label="Book reader">
+        <div class="book-pages">
+          <canvas id="single-page" class="book-page single-page" aria-label="Current book page"></canvas>
+          <canvas id="left-page" class="book-page spread-page" aria-label="Left book page"></canvas>
+          <canvas id="right-page" class="book-page spread-page" aria-label="Right book page"></canvas>
+        </div>
+        <canvas id="turning-page" aria-hidden="true"></canvas>
+      </section>
+      <nav class="reader-controls" aria-label="Reader controls">
+        <button id="previous-page" type="button" aria-label="Previous pages">← Previous</button>
+        <button id="zoom-toggle" type="button" aria-label="Toggle page zoom">Zoom</button>
+        <button id="next-page" type="button" aria-label="Next pages">Next →</button>
+      </nav>
+      <p id="reader-status" class="reader-status" role="status"></p>
+    </main>
+  </body>
+</html>

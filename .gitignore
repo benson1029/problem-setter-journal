@@ -1,3 +1,10 @@
 .DS_Store
 Thumbs.db
 tmp/
+
+# Keep the private source book and local build by-products out of the public repo.
+benson_problem_setting_journal_b5.pdf
+__pycache__/
+*.py[cod]
+.env
+node_modules/

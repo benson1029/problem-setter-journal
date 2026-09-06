@@ -12,10 +12,14 @@
   <body>
     <main class="reader-shell">
       <header class="reader-header">
-        <a href="./">The Problem Setter's Journal</a>
+        <span class="reader-brand">
+          <button id="toc-toggle" class="toc-toggle" type="button" aria-controls="toc-panel" aria-expanded="false" aria-label="Open table of contents">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14M5 12h14M5 18h14" /></svg>
+          </button>
+          <a href="./">The Problem Setter's Journal</a>
+        </span>
         <span id="page-label">Loading reading edition…</span>
         <span class="reader-actions">
-          <button id="toc-toggle" type="button" aria-controls="toc-panel" aria-expanded="false">Contents</button>
           <a href="./">Close reader</a>
         </span>
       </header>
@@ -74,11 +78,18 @@
           <canvas id="left-page" class="book-page spread-page" aria-label="Left book page"></canvas>
           <canvas id="right-page" class="book-page spread-page" aria-label="Right book page"></canvas>
         </div>
-        <canvas id="turning-page" aria-hidden="true"></canvas>
+        <div id="turning-leaf" aria-hidden="true">
+          <canvas id="turning-front" class="leaf-face"></canvas>
+          <canvas id="turning-back" class="leaf-face"></canvas>
+        </div>
       </section>
       <nav class="reader-controls" aria-label="Reader controls">
         <button id="previous-page" type="button" aria-label="Previous pages">← Previous</button>
-        <button id="zoom-toggle" type="button" aria-label="Toggle page zoom">Zoom</button>
+        <span class="zoom-controls" aria-label="Page zoom controls">
+          <button id="zoom-out" type="button" aria-label="Zoom out" title="Zoom out">−</button>
+          <output id="zoom-level" aria-live="polite">100%</output>
+          <button id="zoom-in" type="button" aria-label="Zoom in" title="Zoom in">+</button>
+        </span>
         <button id="next-page" type="button" aria-label="Next pages">Next →</button>
       </nav>
       <p id="reader-status" class="reader-status" role="status"></p>

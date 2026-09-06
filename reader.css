@@ -5,10 +5,14 @@ button { font: inherit; }
 .reader-shell { position: relative; display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; height: 100dvh; padding: 16px 22px 12px; overflow: hidden; }
 .reader-header { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; min-height: 30px; color: #9da7b3; font-size: 13px; }
 .reader-header a { color: #dce3ea; text-decoration: none; }
+.reader-brand { display: flex; align-items: center; gap: 9px; }
+.toc-toggle { display: grid; width: 24px; height: 24px; place-items: center; border: 0; padding: 3px; color: #dce3ea; background: transparent; cursor: pointer; }
+.toc-toggle:hover { color: #fff; background: #2a323c; border-radius: 4px; }
+.toc-toggle svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-width: 1.8; }
 .reader-actions { display: flex; justify-content: flex-end; align-items: center; gap: 14px; }
 .reader-header button { border: 0; padding: 0; color: #dce3ea; background: transparent; cursor: pointer; }
 .reader-header span { text-align: center; }
-.toc-panel { position: absolute; z-index: 5; top: 56px; right: 22px; width: min(390px, calc(100vw - 44px)); max-height: calc(100dvh - 72px); overflow: auto; padding: 12px; border: 1px solid #4b5563; border-radius: 8px; background: #20262e; box-shadow: 0 12px 30px rgb(0 0 0 / 40%); }
+.toc-panel { position: absolute; z-index: 5; top: 0; bottom: 0; left: 0; width: min(390px, calc(100vw - 44px)); overflow: auto; padding: 16px; border-right: 1px solid #4b5563; background: #20262e; box-shadow: 12px 0 30px rgb(0 0 0 / 32%); }
 .toc-panel[hidden] { display: none; }
 .toc-heading { display: flex; align-items: center; justify-content: space-between; padding: 4px 6px 10px; color: #e6edf3; }
 .toc-heading button { border: 0; padding: 0 4px; color: #9da7b3; background: transparent; font-size: 20px; cursor: pointer; }
@@ -19,28 +23,55 @@ button { font: inherit; }
 .toc-section { font-weight: 600; }
 .toc-subitems { margin: 0 0 6px 12px; border-left: 1px solid #4b5563; }
 .toc-subitems button { padding: 7px 8px 7px 12px; color: #bac4cf; font-size: 12px; line-height: 1.35; }
-.book-stage { position: relative; align-self: center; justify-self: center; width: min(calc(100vw - 44px), calc((100dvh - 140px) * .70339)); height: min(calc(100dvh - 140px), calc((100vw - 44px) / .70339)); perspective: 2200px; user-select: none; }
+.book-stage { --cover-turn-offset: 0px; position: relative; align-self: center; justify-self: center; width: min(calc(100vw - 44px), calc((100dvh - 140px) * .70339)); height: min(calc(100dvh - 140px), calc((100vw - 44px) / .70339)); perspective: 2200px; user-select: none; }
 .book-stage.is-spread { width: min(calc(100vw - 44px), calc((100dvh - 140px) * 1.41678)); height: min(calc(100dvh - 140px), calc((100vw - 44px) / 1.41678)); }
+.book-stage.is-cover { width: min(calc(100vw - 44px), calc((100dvh - 140px) * 1.41678)); height: min(calc(100dvh - 140px), calc((100vw - 44px) / 1.41678)); }
 .book-stage.is-zoomed { cursor: grab; }
 .book-stage.is-panning { cursor: grabbing; }
 .book-pages { display: flex; justify-content: center; gap: 4px; width: 100%; height: 100%; }
+.is-front-cover .book-pages { justify-content: flex-end; }
+.is-back-cover .book-pages { justify-content: flex-start; }
 .book-page { display: none; height: 100%; width: auto; background: #fff; box-shadow: 0 4px 22px rgb(0 0 0 / 35%); }
 .is-single .single-page, .is-spread .spread-page { display: block; }
-#turning-page { display: none; position: absolute; top: 0; height: 100%; width: auto; background: #fff; box-shadow: 0 4px 22px rgb(0 0 0 / 35%); backface-visibility: hidden; transform-style: preserve-3d; }
-.is-single #turning-page { left: 50%; transform: translateX(-50%); transform-origin: left center; }
-.is-spread #turning-page { right: 0; transform-origin: left center; }
-.is-spread.turning-back #turning-page { left: 0; right: auto; transform-origin: right center; }
-#turning-page.is-turning { display: block; animation: turn-forward 620ms cubic-bezier(.2,.65,.2,1) both; }
-.turning-back #turning-page.is-turning { animation-name: turn-back; }
-@keyframes turn-forward { 0% { opacity: 1; transform: rotateY(0deg); } 100% { opacity: .18; transform: rotateY(-150deg); } }
-@keyframes turn-back { 0% { opacity: 1; transform: rotateY(0deg); } 100% { opacity: .18; transform: rotateY(150deg); } }
-.is-single #turning-page.is-turning { animation-name: turn-single-forward; }
-.is-single.turning-back #turning-page.is-turning { animation-name: turn-single-back; }
-@keyframes turn-single-forward { 0% { opacity: 1; transform: translateX(-50%) rotateY(0deg); } 100% { opacity: .18; transform: translateX(-50%) rotateY(-150deg); } }
-@keyframes turn-single-back { 0% { opacity: 1; transform: translateX(-50%) rotateY(0deg); } 100% { opacity: .18; transform: translateX(-50%) rotateY(150deg); } }
-.reader-controls { display: flex; justify-content: center; gap: 10px; padding: 12px 0 6px; }
+#turning-leaf { display: none; position: absolute; z-index: 2; top: 0; height: 100%; transform-style: preserve-3d; }
+.leaf-face { position: absolute; inset: 0; width: 100%; height: 100%; background: #fff; box-shadow: 0 4px 22px rgb(0 0 0 / 35%); backface-visibility: hidden; }
+#turning-back { transform: rotateY(180deg); }
+.is-single #turning-leaf { left: 50%; transform: translateX(-50%); transform-origin: left center; }
+.is-single.turning-forward #turning-leaf { right: 0; left: auto; transform: none; transform-origin: left center; }
+.is-spread #turning-leaf { right: 0; transform-origin: left center; }
+.is-spread.turning-back #turning-leaf { left: 0; right: auto; transform-origin: right center; }
+#turning-leaf.is-prepared { display: block; }
+#turning-leaf.is-turning { display: block; animation: turn-forward 620ms cubic-bezier(.2,.65,.2,1) both; }
+.turning-back #turning-leaf.is-turning { animation-name: turn-back; }
+@keyframes turn-forward { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(-180deg); } }
+@keyframes turn-back { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(180deg); } }
+.is-single #turning-leaf.is-turning { animation-name: turn-single-forward; }
+.is-single.turning-back #turning-leaf.is-turning { animation-name: turn-single-back; }
+.is-single.turning-forward #turning-leaf.is-turning { animation-name: turn-forward; }
+/* Returning from pages 2–3 to the front cover starts at the left-hand page.
+   It must hinge from its right edge, just like a physical front cover closing. */
+.is-single.is-front-cover.turning-back #turning-leaf { left: calc(0px - var(--cover-turn-offset)); right: auto; transform: none; transform-origin: right center; }
+.is-single.is-front-cover.turning-back #turning-leaf.is-turning { animation-name: turn-back; }
+.is-single.is-back-cover.turning-forward #turning-leaf { right: calc(0px - var(--cover-turn-offset)); }
+@keyframes turn-single-forward { 0% { transform: translateX(-50%) rotateY(0deg); } 100% { transform: translateX(-50%) rotateY(-180deg); } }
+@keyframes turn-single-back { 0% { transform: translateX(-50%) rotateY(0deg); } 100% { transform: translateX(-50%) rotateY(180deg); } }
+.reader-controls { position: relative; z-index: 3; display: flex; justify-content: center; gap: 10px; padding: 12px 0 6px; }
 .reader-controls button { min-width: 108px; border: 1px solid #4b5563; border-radius: 6px; padding: 7px 12px; color: #e6edf3; background: #252b33; cursor: pointer; }
 .reader-controls button:hover:not(:disabled) { background: #343c47; }
 .reader-controls button:disabled { cursor: not-allowed; opacity: .4; }
+.zoom-controls { display: flex; align-items: center; gap: 6px; }
+.zoom-controls button { min-width: 34px; padding-inline: 9px; }
+#zoom-level { min-width: 46px; color: #9da7b3; font-size: 12px; text-align: center; }
 .reader-status { min-height: 16px; margin: 0; color: #9da7b3; font-size: 12px; text-align: center; }
-@media (max-width: 720px) { .reader-shell { padding: 12px 12px 8px; } .reader-header { grid-template-columns: 1fr auto; } .reader-header > span:not(.reader-actions) { display: none; } .toc-panel { top: 48px; right: 12px; width: min(340px, calc(100vw - 24px)); } .book-stage, .book-stage.is-spread { width: min(calc(100vw - 24px), calc((100dvh - 124px) * .70339)); height: min(calc(100dvh - 124px), calc((100vw - 24px) / .70339)); } }
+@media (max-width: 720px) { .reader-shell { padding: 12px 12px 8px; } .reader-header { grid-template-columns: 1fr auto; } .reader-brand a, #page-label { display: none; } .toc-panel { width: min(340px, calc(100vw - 24px)); } .book-stage, .book-stage.is-spread, .book-stage.is-cover { width: min(calc(100vw - 24px), calc((100dvh - 124px) * .70339)); height: min(calc(100dvh - 124px), calc((100vw - 24px) / .70339)); } .is-front-cover .book-pages, .is-back-cover .book-pages { justify-content: center; } }
+@media (max-width: 480px) {
+  .reader-controls { gap: 4px; padding: 9px 0 4px; }
+  .reader-controls button { min-width: 30px; padding: 6px 7px; font-size: 12px; }
+  .reader-controls > #previous-page, .reader-controls > #next-page { min-width: 32px; font-size: 0; }
+  .reader-controls > #previous-page::after, .reader-controls > #next-page::after { font-size: 16px; line-height: 1; }
+  .reader-controls > #previous-page::after { content: "←"; }
+  .reader-controls > #next-page::after { content: "→"; }
+  .zoom-controls { gap: 3px; }
+  .zoom-controls button { min-width: 30px; padding-inline: 7px; }
+  #zoom-level { min-width: 40px; font-size: 11px; }
+}

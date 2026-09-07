@@ -1,0 +1,26 @@
+.extra-seating { color: #273431; font: 14px/1.5 system-ui, sans-serif; }
+.extra-seating p { margin: 0 0 14px; }
+.extra-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0; }
+.extra-controls label { display: inline-flex; align-items: center; gap: 5px; }
+.extra-seating button, .extra-seating select { font: inherit; color: inherit; background: #fff; border: 1px solid #bdcbc5; border-radius: 7px; padding: 7px 10px; }
+.extra-seating button:not(:disabled) { cursor: pointer; }
+.extra-seating button:not(:disabled):hover { background: #fff4bb; border-color: #bc9d26; }
+.extra-seating button:focus-visible, .extra-seating select:focus-visible { outline: 3px solid #c8a329; outline-offset: 2px; }
+.extra-seating button:disabled { opacity: .55; }
+.extra-hint { display: flex; align-items: center; gap: 5px; margin: 12px 0; }
+.extra-seat-scroll, .extra-trace-scroll { overflow-x: auto; padding: 4px 2px 8px; }
+.extra-seat-row { display: grid; grid-template-columns: repeat(var(--extra-seats), minmax(43px, 1fr)); gap: 5px; }
+.extra-seating .extra-seat { padding: 7px 2px; display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 43px; border-radius: 8px 8px 3px 3px; }
+.extra-seat-number { font-size: 11px; font-weight: 600; }
+.extra-seat-person { font-size: 17px; font-weight: 700; }
+.extra-seat-distance { font-size: 10px; white-space: nowrap; }
+.extra-seating .extra-seat.extra-occupied { background: #e9eeeb; opacity: 1; border-color: #c7d1cc; }
+.extra-seating .extra-seat.extra-eligible { background: #e7f4ec; border: 2px solid #599877; padding: 6px 1px; }
+.extra-seating .extra-seat.extra-latest { background: #d5e5dd; }
+.extra-legend, .extra-note { font-size: 12px; color: #52625a; }
+.extra-status { background: #f2f5f2; border-left: 3px solid #71917f; padding: 9px 12px; }
+.extra-trace { width: max-content; min-width: 100%; border-collapse: collapse; font-size: 13px; }
+.extra-trace caption { text-align: left; font-weight: 600; padding-bottom: 6px; }
+.extra-trace th, .extra-trace td { border: 1px solid #cbd5ce; text-align: center; min-width: 28px; padding: 6px; }
+.extra-trace th { text-align: left; background: #f4f6f4; }
+.extra-count-result { margin-top: 8px !important; font-weight: 600; }

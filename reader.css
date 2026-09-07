@@ -36,8 +36,31 @@ button { font: inherit; }
 #turning-leaf { display: none; position: absolute; z-index: 2; top: 0; height: 100%; transform-style: preserve-3d; }
 .leaf-face { position: absolute; inset: 0; width: 100%; height: 100%; background: #fff; box-shadow: 0 4px 22px rgb(0 0 0 / 35%); backface-visibility: hidden; }
 #turning-back { transform: rotateY(180deg); }
+.link-layer { position: absolute; z-index: 4; inset: 0; pointer-events: none; }
+.page-link { position: absolute; display: block; border-radius: 2px; background: transparent; pointer-events: auto; transition: background 120ms ease; }
+.page-link:hover, .page-link:focus-visible { background: rgb(255 222 54 / 58%); outline: 1px solid rgb(255 230 82 / 86%); }
+.page-toc-link { position: absolute; display: block; border: 0; border-radius: 2px; padding: 0; background: transparent; cursor: pointer; pointer-events: auto; transition: background 120ms ease; }
+.page-toc-link:hover, .page-toc-link:focus-visible { background: rgb(255 222 54 / 58%); outline: 1px solid rgb(255 230 82 / 86%); }
+.solution-layer, .errata-layer { position: fixed; z-index: 6; inset: 0; pointer-events: none; }
+.solution-trigger { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-width: 54px; min-height: 54px; border: 1px solid #bcc8d1; border-radius: 8px; padding: 2px; color: #344553; background: rgb(255 255 255 / 94%); box-shadow: 0 1px 4px rgb(0 0 0 / 18%); font-size: 9px; font-weight: 700; line-height: 1; cursor: pointer; pointer-events: auto; }
+.solution-icon { display: grid; flex: none; width: 25px; height: 25px; place-items: center; border-radius: 50%; color: #506d7e; background: #e5edf1; transition: color 120ms ease, background 120ms ease; }
+.solution-icon svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.solution-trigger:hover, .solution-trigger:focus-visible { border-color: #c7a62e; color: #382e0c; background: #fff5c8; outline: 2px solid rgb(235 205 89 / 62%); outline-offset: 1px; }
+.solution-trigger:hover .solution-icon, .solution-trigger:focus-visible .solution-icon { color: #5a4500; background: #f2d662; }
+.errata-trigger { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-width: 54px; min-height: 54px; border: 1px solid #d6b2ad; border-radius: 8px; padding: 2px; color: #63312d; background: rgb(255 250 249 / 94%); box-shadow: 0 1px 4px rgb(0 0 0 / 18%); font-size: 9px; font-weight: 700; line-height: 1; cursor: pointer; pointer-events: auto; }
+.errata-icon { display: grid; flex: none; width: 25px; height: 25px; place-items: center; border-radius: 50%; color: #9b3f35; background: #f7e1de; transition: color 120ms ease, background 120ms ease; }
+.errata-icon svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; }
+.errata-trigger:hover, .errata-trigger:focus-visible { border-color: #bd7a24; color: #482600; background: #fff0c5; outline: 2px solid rgb(235 181 89 / 62%); outline-offset: 1px; }
+.errata-trigger:hover .errata-icon, .errata-trigger:focus-visible .errata-icon { color: #643b00; background: #efc961; }
+.solution-popover, .errata-popover { position: absolute; display: flex; flex-direction: column; min-width: 280px; min-height: 160px; max-width: calc(100vw - 12px); max-height: calc(100dvh - 12px); overflow: hidden; resize: both; border: 1px solid #596675; border-radius: 5px; background: #fff; box-shadow: 0 10px 26px rgb(0 0 0 / 45%); pointer-events: auto; }
+.solution-popover-header { display: flex; flex: none; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border-bottom: 1px solid #d7dce0; color: #24313d; background: #f5f7f8; font-size: 12px; font-weight: 600; cursor: grab; touch-action: none; }
+.solution-popover-header:active { cursor: grabbing; }
+.solution-close { border: 0; padding: 0 3px; color: #4d5a67; background: transparent; font-size: 18px; line-height: 1; cursor: pointer; }
+.solution-close:hover, .solution-close:focus-visible { color: #111a22; }
+.solution-popover-body { flex: 1 1 auto; min-height: 0; max-height: calc(100dvh - 64px); overflow: auto; overscroll-behavior: contain; padding: 8px; }
+.solution-popover img, .errata-popover img { display: block; width: 100%; height: auto; }
 .is-single #turning-leaf { left: 50%; transform: translateX(-50%); transform-origin: left center; }
-.is-single.turning-forward #turning-leaf { right: 0; left: auto; transform: none; transform-origin: left center; }
+.is-single.is-cover.turning-forward #turning-leaf { right: 0; left: auto; transform: none; transform-origin: left center; }
 .is-spread #turning-leaf { right: 0; transform-origin: left center; }
 .is-spread.turning-back #turning-leaf { left: 0; right: auto; transform-origin: right center; }
 #turning-leaf.is-prepared { display: block; }
@@ -47,7 +70,8 @@ button { font: inherit; }
 @keyframes turn-back { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(180deg); } }
 .is-single #turning-leaf.is-turning { animation-name: turn-single-forward; }
 .is-single.turning-back #turning-leaf.is-turning { animation-name: turn-single-back; }
-.is-single.turning-forward #turning-leaf.is-turning { animation-name: turn-forward; }
+.is-single.single-return #turning-leaf.is-turning { animation-name: turn-single-return; }
+.is-single.is-cover.turning-forward #turning-leaf.is-turning { animation-name: turn-forward; }
 /* Returning from pages 2–3 to the front cover starts at the left-hand page.
    It must hinge from its right edge, just like a physical front cover closing. */
 .is-single.is-front-cover.turning-back #turning-leaf { left: calc(0px - var(--cover-turn-offset)); right: auto; transform: none; transform-origin: right center; }
@@ -55,6 +79,7 @@ button { font: inherit; }
 .is-single.is-back-cover.turning-forward #turning-leaf { right: calc(0px - var(--cover-turn-offset)); }
 @keyframes turn-single-forward { 0% { transform: translateX(-50%) rotateY(0deg); } 100% { transform: translateX(-50%) rotateY(-180deg); } }
 @keyframes turn-single-back { 0% { transform: translateX(-50%) rotateY(0deg); } 100% { transform: translateX(-50%) rotateY(180deg); } }
+@keyframes turn-single-return { 0% { transform: translateX(-50%) rotateY(180deg); } 100% { transform: translateX(-50%) rotateY(0deg); } }
 .reader-controls { position: relative; z-index: 3; display: flex; justify-content: center; gap: 10px; padding: 12px 0 6px; }
 .reader-controls button { min-width: 108px; border: 1px solid #4b5563; border-radius: 6px; padding: 7px 12px; color: #e6edf3; background: #252b33; cursor: pointer; }
 .reader-controls button:hover:not(:disabled) { background: #343c47; }

@@ -1,0 +1,40 @@
+.widget-badges { position: fixed; inset: 0; pointer-events: none; z-index: 6; }
+.widget-badge { position: absolute; width: 54px; min-height: 54px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border: 1px solid #90b6ad; border-radius: 8px; padding: 2px; background: #f5fffb; color: #285c51; font-size: 9px; font-weight: 700; cursor: pointer; pointer-events: auto; }
+.widget-badge span { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 50%; background: #d9eee6; font-size: 14px; }
+.widget-badge:hover, .widget-badge:focus-visible { outline: 2px solid #e4c74f; background: #fff5c8; }
+.widget-dialog { position: fixed; margin: 0; padding: 0; width: min(760px, calc(100vw - 24px)); max-width: calc(100vw - 12px); max-height: calc(100dvh - 12px); min-width: min(300px, calc(100vw - 12px)); min-height: 180px; color: #24343c; background: #fff; border: 1px solid #aebcb9; border-radius: 9px; box-shadow: 0 16px 60px #0006; overflow: hidden; }
+.widget-dialog[open] { display: flex; flex-direction: column; }
+.widget-dialog::backdrop { background: #07192038; }
+.widget-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex: none; padding: 10px 14px; background: #eff5f3; border-bottom: 1px solid #dbe4df; cursor: grab; touch-action: none; }
+.widget-header h2 { margin: 0; font-size: 16px; }
+.widget-close { border: 0; border-radius: 4px; background: transparent; color: #344e46; padding: 2px 8px; font-size: 23px; cursor: pointer; }
+.widget-body { padding: 16px 20px 24px; overflow: auto; min-height: 0; overscroll-behavior: contain; }
+.widget-resize { position: absolute; bottom: 0; right: 0; width: 23px; height: 23px; padding: 0; border: 0; background: linear-gradient(135deg, transparent 48%, #829d91 49%, #829d91 55%, transparent 56%, transparent 67%, #829d91 68%, #829d91 74%, transparent 75%); cursor: nwse-resize; touch-action: none; }
+.widget-body button, .widget-body select { font: inherit; }
+.widget-body button:focus-visible, .widget-body select:focus-visible, .widget-dialog > button:focus-visible { outline: 3px solid #cb9e19; outline-offset: 2px; }
+.mg-intro { margin: 0 0 15px; font-size: 14px; line-height: 1.55; }
+.mg-options { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
+.mg-options label { display: grid; gap: 5px; font-size: 12px; flex: 1 1 210px; }
+.mg-options select { padding: 8px; border: 1px solid #c3ceca; border-radius: 5px; width: 100%; color: #24343c; background: #fff; }
+.mg-workspace { display: grid; grid-template-columns: minmax(0, 1fr) 150px; gap: 28px; align-items: start; }
+.mg-workspace h3 { font-size: 12px; font-weight: 600; margin: 0 0 10px; color: #60726d; }
+.mg-board { position: relative; width: min(100%, 330px); margin: 12px auto 26px; touch-action: none; user-select: none; }
+.mg-cell { position: absolute; display: grid; place-items: center; border: 2px solid white; border-radius: 7px; padding: 0; font-size: clamp(18px, 4vw, 28px) !important; font-weight: 600 !important; color: #263c43; background: #e9f0f1; cursor: crosshair; }
+.mg-cell.is-selected { background: #ffe79e; box-shadow: inset 0 0 0 2px #ba973a; }
+.mg-cell span { display: block; }
+.mg-rotating { position: absolute; z-index: 2; transform-origin: center; filter: drop-shadow(0 4px 8px #263c4355); pointer-events: none; }
+.mg-rotating .mg-cell { background: #ffe79e; }
+.mg-target { display: grid; gap: 2px; width: 100%; }
+.mg-target span { display: grid; place-items: center; aspect-ratio: 1; background: #e0eee5; border-radius: 4px; font-size: 16px; }
+.mg-rule { font-size: 13px; line-height: 1.5; color: #61736c; }
+.mg-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.mg-controls button { border: 1px solid #c3ceca; border-radius: 5px; padding: 7px 12px; background: #f7faf8; color: #27483d; cursor: pointer; }
+.mg-controls button:disabled { opacity: .45; cursor: default; }
+.mg-controls span { margin-left: auto; font-size: 13px; }
+.mg-status { min-height: 22px; font-size: 13px; margin-bottom: 0; }
+.mg-status.is-solved { color: #287046; font-weight: 600; }
+@media (max-width: 520px) {
+  .widget-body { padding: 12px 14px 24px; }
+  .mg-workspace { grid-template-columns: minmax(0, 1fr) 86px; gap: 16px; }
+  .mg-target span { font-size: 12px; }
+}

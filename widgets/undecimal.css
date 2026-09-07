@@ -1,0 +1,27 @@
+.undecimal-widget { color: #273431; font: 14px/1.5 system-ui, sans-serif; }
+.undecimal-widget p { margin: 0 0 12px; }
+.undecimal-widget button, .undecimal-widget input { font: inherit; color: inherit; background: #fff; border: 1px solid #bdcbc5; border-radius: 7px; padding: 8px 10px; }
+.undecimal-widget button:not(:disabled) { cursor: pointer; }
+.undecimal-widget button:not(:disabled):hover { background: #fff4bb; border-color: #bc9d26; }
+.undecimal-widget button:focus-visible, .undecimal-widget input:focus-visible { outline: 3px solid #c8a329; outline-offset: 2px; }
+.undecimal-widget button:disabled { opacity: .5; }
+.ud-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0; }
+.ud-inputs label { display: flex; flex: 1 1 180px; align-items: center; gap: 7px; font-weight: 600; }
+.ud-inputs input { width: 100%; min-width: 0; font-family: ui-monospace, monospace; }
+.ud-note { font-size: 12px; color: #52625a; }
+.ud-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
+.ud-card { padding: 12px; border: 1px solid #d1dbd5; border-radius: 8px; min-width: 0; }
+.ud-card h3 { margin: 0 0 12px; font-size: 14px; }
+.ud-tokens { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-bottom: 12px; min-height: 44px; }
+.ud-digit, .undecimal-widget .ud-pair { font: 600 18px/1.3 ui-monospace, monospace; }
+.ud-digit { padding: 9px 5px; }
+.undecimal-widget .ud-pair { min-width: 52px; min-height: 44px; background: #f3f6f3; }
+.undecimal-widget .ud-pair[aria-pressed="true"] { background: #e1f0e6; border-color: #599877; }
+.ud-representation { font: 12px/1.5 ui-monospace, monospace; color: #52625a; overflow-wrap: anywhere; }
+.ud-decimal { font-weight: 600; overflow-wrap: anywhere; }
+.ud-card .ud-controls { margin-bottom: 0; }
+.ud-comparison { padding: 10px 12px; background: #f2f5f2; border-left: 3px solid #71917f; font-weight: 600; }
+.ud-explanation { margin-top: 12px; padding: 12px 0 0; border-top: 1px solid #d1dbd5; overflow-wrap: anywhere; }
+.ud-explanation p:last-child { margin-bottom: 0; }
+.ud-verdict { font-weight: 600; }
+@media (max-width: 540px) { .ud-cards { grid-template-columns: 1fr; } .ud-inputs label { flex-basis: 100%; } }

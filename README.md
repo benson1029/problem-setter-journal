@@ -29,3 +29,31 @@ This writes shuffled WebP atlas files and a compact coordinate map to
 `assets/book/`. The public viewer in `reader.html` loads only the atlases needed
 for the page being read. It is a copying deterrent, not DRM: a determined person
 can still inspect the public reader code and browser requests.
+
+## Interactive exercises
+
+Use the **Explore** badge in the reader to open a movable, resizable exercise.
+Mechanical Grid is available on displayed pages 36–39, with the two book
+examples, shuffled grids, animated rectangle rotations, exact-target and
+book-sorting goals, undo, and reset. Introvert Seating is available on page 78,
+including the eight-seat exercise and configurable small examples.
+
+Additional task widgets let readers explore ambiguous base-11 numbers
+(page 16), step through Cargo Sorting (page 47), and follow locker
+cycles in Prisoners’ Gamble (pages 89–91). They run entirely in the browser;
+no account, external service, or extra deployment step is needed.
+
+Widgets register with `window.JournalWidgets` and provide `id`, `title`,
+`pages` (zero-based source PDF indices), `y` (relative page height), and
+`mount(container)`, which returns a cleanup function. The shared host owns
+the modal, keyboard isolation, resizing, and page badges. Optional `offsetY`
+adds a screen-space offset to avoid another badge. Displayed page numbers
+are two less than physical PDF page numbers.
+
+Run the Mechanical Grid rule checks with `node scripts/check_mechanical_grid.cjs`.
+The new widget rule checks are `scripts/check_undecimal.cjs`,
+`scripts/check_cargo.cjs`, and `scripts/check_prisoners.cjs` (also run with Node).
+With Playwright available and the preview running on port 8765, run
+`node scripts/check_widgets_browser.cjs` for desktop and phone integration
+checks. `READER_URL` and `BROWSER_CHANNEL` can override the preview URL and
+browser channel (Microsoft Edge by default).

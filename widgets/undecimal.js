@@ -38,7 +38,11 @@
     const on = (node, name, callback) => node.addEventListener(name, callback, { signal: events.signal });
     let numbers = ['81056', '80823'], joined = [new Set(), new Set()], revealed = false;
     const root = element('div', 'undecimal-widget');
-    root.append(element('p', 'ud-intro', 'Alice writes the base-11 digit ten as “10”. But “10” can also mean two digits, one and zero. Tap each outlined pair to join or split it, then compare the possible readings.'));
+    root.append(element('p', 'ud-intro', 'Join or split each outlined “10”, then compare X and Y.'));
+    const guide = element('details', 'ud-guide');
+    guide.append(element('summary', '', 'About the puzzle'));
+    guide.append(element('p', '', 'A joined pair is digit ten; a split pair is digits 1 and 0.'));
+    root.append(guide);
     const presets = element('div', 'ud-controls');
     const makeButton = text => { const node = element('button', '', text); node.type = 'button'; return node; };
     [['Book example 1', ['81056', '80823']], ['Book example 2', ['1010', '55']]].forEach(([label, pair]) => {
@@ -56,7 +60,10 @@
       label.append(input); form.append(label); return input;
     });
     const apply = element('button', '', 'Explore'); apply.type = 'submit'; form.append(apply); root.append(form);
-    root.append(element('p', 'ud-note', 'Custom examples: 1–24 characters, using 0–9. Every calculation below is exact.'));
+    const custom = element('details', 'ud-guide');
+    custom.append(element('summary', '', 'Use custom numbers'));
+    custom.append(element('p', '', 'Enter 1–24 characters using 0–9.'));
+    root.append(custom);
     const cards = element('div', 'ud-cards');
     const panels = ['X', 'Y'].map(name => {
       const card = element('section', 'ud-card'); card.append(element('h3', '', `${name} · choose a reading`));
@@ -70,7 +77,6 @@
     });
     root.append(cards);
     const comparison = element('p', 'ud-comparison'); comparison.setAttribute('role', 'status'); root.append(comparison);
-    root.append(element('p', 'ud-note', 'This compares only your selected readings. Can you decide which number is larger for every possible reading?'));
     const reveal = makeButton('Reveal ranges and conclusion'); reveal.className = 'ud-reveal'; reveal.setAttribute('aria-expanded', 'false');
     const explanation = element('div', 'ud-explanation'); explanation.hidden = true; explanation.setAttribute('aria-live', 'polite');
     root.append(reveal, explanation); container.append(root);
@@ -109,7 +115,7 @@
         });
         const result = relation(...numbers);
         explanation.append(element('p', 'ud-verdict', result === '?' ? 'Neither X > Y nor Y > X is guaranteed.' : `X ${result} Y is guaranteed for every reading.`));
-        explanation.append(element('p', '', 'Joining every “10” gives the minimum; splitting every pair gives the maximum. A strict comparison is guaranteed only when one minimum is greater than the other maximum. These endpoints do not imply that every value between them is possible.'));
+        explanation.append(element('p', '', 'Join all pairs for the minimum; split all for the maximum.'));
       }
     }
     panels.forEach((panel, index) => {
@@ -129,5 +135,5 @@
     return () => { events.abort(); root.remove(); };
   }
   window.JournalWidgets = window.JournalWidgets || [];
-  window.JournalWidgets.push({ id: 'ambiguous-undecimal', title: 'Ambiguous Undecimal System', pages: [17], y: 482 / 1331, offsetY: 64, mount });
+  window.JournalWidgets.push({ id: 'ambiguous-undecimal', title: 'Ambiguous Undecimal System', pages: [17, 18], badge: { page: 17, y: 482 / 1331, offsetY: 64 }, mount });
 })();

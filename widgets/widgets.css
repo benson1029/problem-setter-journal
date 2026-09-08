@@ -13,6 +13,9 @@
 .widget-body button, .widget-body select { font: inherit; }
 .widget-body button:focus-visible, .widget-body select:focus-visible, .widget-dialog > button:focus-visible { outline: 3px solid #cb9e19; outline-offset: 2px; }
 .mg-intro { margin: 0 0 15px; font-size: 14px; line-height: 1.55; }
+.mg-help { margin: -7px 0 14px; color: #61736c; font-size: 12px; }
+.mg-help summary { width: fit-content; cursor: pointer; color: #3f6253; }
+.mg-help p { margin: 5px 0 0; }
 .mg-options { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
 .mg-options label { display: grid; gap: 5px; font-size: 12px; flex: 1 1 210px; }
 .mg-options select { padding: 8px; border: 1px solid #c3ceca; border-radius: 5px; width: 100%; color: #24343c; background: #fff; }

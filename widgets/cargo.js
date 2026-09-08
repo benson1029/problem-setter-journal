@@ -176,5 +176,5 @@
     return () => { disposed = true; running = false; animation?.cancel(); events.abort(); root.remove(); };
   }
   window.JournalWidgets = window.JournalWidgets || [];
-  window.JournalWidgets.push({ id: 'cargo-sorting', title: 'Cargo Sorting', pages: [48], y: 907 / 1331, offsetY: 64, mount });
+  window.JournalWidgets.push({ id: 'cargo-sorting', title: 'Cargo Sorting', pages: [48, 49, 50, 51, 52], badge: { page: 48, y: 907 / 1331, offsetY: 64 }, mount });
 })();

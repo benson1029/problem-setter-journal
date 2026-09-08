@@ -1,6 +1,9 @@
 .pg-widget { color: #292b28; font: 14px/1.5 system-ui, sans-serif; }
 .pg-widget p { margin: 0 0 12px; }
 .pg-widget .pg-intro { max-width: 70ch; }
+.pg-widget .pg-help { margin: 8px 0 10px; color: #65695f; font-size: 12px; }
+.pg-widget .pg-help summary { cursor: pointer; color: #4b6149; }
+.pg-widget .pg-help p { margin: 5px 0 0; }
 .pg-widget button, .pg-widget select, .pg-widget input, .pg-widget textarea { font: inherit; color: inherit; }
 .pg-widget button, .pg-widget select, .pg-widget input { min-height: 36px; border: 1px solid #c8cdc5; border-radius: 6px; background: #fff; padding: 6px 9px; }
 .pg-widget button { cursor: pointer; }

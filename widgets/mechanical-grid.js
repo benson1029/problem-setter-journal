@@ -2,10 +2,11 @@
   const { rotate, sorted, bounds } = window.MechanicalGridModel;
   window.JournalWidgets = window.JournalWidgets || [];
   window.JournalWidgets.push({
-    id: 'mechanical-grid', title: 'Mechanical Grid', pages: [37, 38, 39, 40], y: .506, offsetY: 64,
+    id: 'mechanical-grid', title: 'Mechanical Grid', pages: [37, 38, 39, 40, 41, 42, 43], badge: { page: 37, y: .506, offsetY: 64 },
     mount(root) {
       root.innerHTML = `
-        <p class="mg-intro">Drag across cells and release to rotate a rectangle. You can also tap two opposite corners, or select them with Tab and Enter.</p>
+        <p class="mg-intro">Select a rectangle to rotate it.</p>
+        <details class="mg-help"><summary>How to play</summary><p>Drag across cells, or tap two opposite corners. Squares rotate 90°; other rectangles rotate 180°.</p></details>
         <div class="mg-options">
           <label>Puzzle <select data-puzzle><option value="0">Book example 1 · 2 × 2</option><option value="1">Book example 2 · 2 × 2</option><option value="2">Explore · 2 × 3</option><option value="3">Explore · 2 × 4</option></select></label>
           <label>Goal <select data-goal><option value="exact">Match the target</option><option value="sorted">Book rule: rows & columns increasing</option></select></label>

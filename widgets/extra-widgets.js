@@ -37,7 +37,7 @@
     const listen = (node, type, callback) => node.addEventListener(type, callback, { signal: events.signal });
     let size = 8, first = 5, history = [5], highlight = true;
     const root = element("div", "extra-seating");
-    root.append(element("p", "extra-intro", "Choose the next introvert's seat. After the first person, every choice must maximize the distance to the nearest occupied seat. Ties are allowed. Seats are numbered from 0."));
+    root.append(element("p", "extra-intro", "Choose a valid next seat. Valid seats maximize distance to the nearest person; ties are allowed."));
 
     const setup = element("div", "extra-controls");
     const sizeLabel = element("label", "", "Seats ");
@@ -67,7 +67,7 @@
     const scroll = element("div", "extra-seat-scroll");
     const row = element("div", "extra-seat-row"); row.setAttribute("aria-label", "Seats and nearest occupied-seat distances");
     scroll.append(row); root.append(scroll);
-    root.append(element("p", "extra-legend", "Top: seat number · Middle: arrival order or empty seat · Bottom: distance to the nearest person"));
+    root.append(element("p", "extra-legend", "Seat · arrival · nearest-person distance."));
 
     const status = element("p", "extra-status"); status.setAttribute("role", "status"); status.setAttribute("aria-live", "polite"); root.append(status);
     const actions = element("div", "extra-controls");
@@ -75,7 +75,6 @@
     const smallest = element("button", "", "Choose leftmost valid"); smallest.type = "button";
     const largest = element("button", "", "Choose rightmost valid"); largest.type = "button";
     actions.append(undo, smallest, largest); root.append(actions);
-    root.append(element("p", "extra-note", "Repeatedly choosing the leftmost or rightmost valid seat gives the lexicographically smallest or largest continuation."));
 
     const traceScroll = element("div", "extra-trace-scroll");
     const trace = element("table", "extra-trace");
@@ -142,6 +141,6 @@
 
   window.JournalWidgets = window.JournalWidgets || [];
   window.JournalWidgets.push({
-    id: "introvert-seating", title: "Introvert Seating", pages: [79], y: 0.69, mount: mountSeating,
+    id: "introvert-seating", title: "Introvert Seating", pages: [79, 80, 81, 82, 83, 84, 85], badge: { page: 79, y: 764 / 1331, offsetY: 64 }, mount: mountSeating,
   });
 })();

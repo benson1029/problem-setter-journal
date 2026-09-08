@@ -43,9 +43,33 @@ Additional task widgets let readers explore ambiguous base-11 numbers
 cycles in Prisoners’ Gamble (pages 89–91). They run entirely in the browser;
 no account, external service, or extra deployment step is needed.
 
+Arctic Technology has an interactive robot exploration on pages 18–19, and
+Repetitive Journey has an editable tiled-path explorer on pages 23–27.
+The supplied robot, flag, and destroyed-cell illustrations are in
+`assets/widgets/`.
+
+Digit Puzzle (pages 28–30 and 32–33) visualizes the full constructive solution:
+compact repeated-term groups, animated jumps on a powers-of-nine scale, and
+exact digit assignments. It includes the book example, a 104-slot puzzle,
+a powers-of-nine example, an impossible case, and a grouped puzzle builder:
+positive and negative sides can each contain any mix of 1–6-factor terms.
+Run `node scripts/check_digit_puzzle.cjs` for the solver checks and
+`node scripts/check_digit_browser.cjs` for its browser checks (requires Playwright
+and the local preview). Browser screenshots are written under ignored `tmp/`.
+
+Lift Problem (pages 43–45) is a vertical elevator simulator with manual rides,
+animated pickup/travel/reparking, a target column, and ride history. It includes
+the three book examples, an eight-lift shuffle, custom challenges, and both
+the 3N placement and 4N swapping constructions. Use Explore for your own rides
+or Watch solution for animated playback and single-ride stepping.
+Run `node scripts/check_lift_model.cjs` for exhaustive small-building checks and
+`node scripts/check_lift_browser.cjs` for desktop/mobile integration checks
+(requires Playwright and the local preview; screenshots go to ignored `tmp/`).
+
 Widgets register with `window.JournalWidgets` and provide `id`, `title`,
-`pages` (zero-based source PDF indices), `y` (relative page height), and
-`mount(container)`, which returns a cleanup function. The shared host owns
+`pages` (the zero-based source-PDF chapter scope), `badge` (the one deliberate
+`{ page, y, offsetY? }` Explore anchor), and `mount(container)`, which returns
+a cleanup function. The shared host owns
 the modal, keyboard isolation, resizing, and page badges. Optional `offsetY`
 adds a screen-space offset to avoid another badge. Displayed page numbers
 are two less than physical PDF page numbers.
@@ -57,3 +81,6 @@ With Playwright available and the preview running on port 8765, run
 `node scripts/check_widgets_browser.cjs` for desktop and phone integration
 checks. `READER_URL` and `BROWSER_CHANNEL` can override the preview URL and
 browser channel (Microsoft Edge by default).
+Run `node scripts/check_widget_badges.cjs` to verify that every chapter has
+one gutter-aligned Explore anchor and that spoiler-prone widgets are absent
+before their designated later page.

@@ -67,24 +67,25 @@
     badges.hidden=false; badges.replaceChildren();
     const definitions=window.JournalWidgets || [];
     if(activeId && !definitions.find(d=>d.id===activeId)?.pages.some(p=>pages.includes(p))) close();
-    // A definition can cover several consecutive source pages.  On a spread,
-    // render one badge for that exercise (anchored to its first visible page),
-    // rather than duplicating the same action in both page gutters.
-    const visibleDefinitions = new Map();
+    // `pages` says when a modal remains relevant; `badge` is the one
+    // deliberate, non-spoiling entry point in that chapter.  Do not duplicate
+    // an Explore control simply because its chapter spans several spreads.
     definitions.forEach(definition => {
-      const index = pages.findIndex(page => definition.pages.includes(page));
-      if (index >= 0) visibleDefinitions.set(definition.id, { definition, index });
-    });
-    visibleDefinitions.forEach(({ definition, index }) => {
+      const badge = definition.badge || { page: definition.pages[0], y: definition.y, offsetY: definition.offsetY };
+      const index = pages.indexOf(badge.page);
+      if (index < 0) return;
       {
         const rect=canvases[index].getBoundingClientRect();
         const button=document.createElement('button'); button.type='button'; button.className='widget-badge';
         const icon=document.createElement('span'); icon.textContent='▷'; icon.setAttribute('aria-hidden','true');
         button.append(icon,'Explore'); button.title=definition.title;
         button.setAttribute('aria-label',`Explore ${definition.title}`);
+        // Match the Solution and Errata gutter column exactly: page side
+        // selects the inside spread gutter, and single-page mode uses its
+        // outer-page column.
         const x=pages.length===2 ? (index===0 ? rect.right-50 : rect.left-4) : rect.right-64;
         button.style.left=`${x}px`;
-        button.style.top=`${Math.min(rect.bottom-60,rect.top+rect.height*definition.y+(definition.offsetY||0))}px`;
+        button.style.top=`${Math.min(rect.bottom-60,rect.top+rect.height*badge.y+(badge.offsetY||0))}px`;
         button.addEventListener('click',()=>open(definition,button)); badges.append(button);
       }
     });

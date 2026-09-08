@@ -34,20 +34,20 @@
     const events = new AbortController();
     const root = document.createElement('div'); root.className = 'pg-widget';
     root.innerHTML = `
-      <p class="pg-intro">Follow locker numbers to find your prisoner’s ID. As the guard, you can announce swaps of <em>interpreted locker IDs</em> to split long cycles. The physical contents never move.</p>
+      <p class="pg-intro">Open the locker chain. Swap interpreted IDs to split cycles; contents stay put.</p>
       <details class="pg-setup"><summary>Choose a permutation</summary>
         <label>Contents of physical lockers 1, 2, … <textarea class="pg-input" rows="2" spellcheck="false" aria-label="Locker contents"></textarea></label>
         <div class="pg-controls"><button type="button" data-action="apply">Apply</button><button type="button" data-action="book">Book example</button><button type="button" data-action="long">One long cycle (8)</button><button type="button" data-action="full">One long cycle (100)</button></div>
-        <p class="pg-note">Enter each integer from 1 to N exactly once, separated by spaces or commas (2–100 lockers).</p>
+        <p class="pg-note">Use each integer from 1 to N once (2–100 lockers).</p>
         <p class="pg-error" role="alert"></p>
       </details>
       <div class="pg-controls pg-options"><label>Prisoner <select class="pg-prisoner" aria-label="Prisoner ID"></select></label><label>Opening budget <input class="pg-budget" type="number" min="1" max="8" value="2"></label><button type="button" data-action="step">Open next locker</button><button type="button" data-action="restart">Restart walk</button></div>
       <p class="pg-walk-status" role="status" aria-live="polite"></p>
       <div class="pg-lockers" aria-label="Physical lockers, interpreted IDs, and fixed contents"></div>
-      <p class="pg-note">Each card stays in its physical position. “ID” is the announced label; “inside” is the fixed contents. The outlined card is the next to open.</p>
+      <details class="pg-help"><summary>Labels</summary><p>Physical position stays fixed. ID is the announced label; inside is fixed content.</p></details>
       <ol class="pg-trace" aria-label="Opened lockers"></ol>
       <section class="pg-guard"><h3>Guard’s announcement</h3><div class="pg-controls"><label>Swap ID <select class="pg-swap-a" aria-label="First interpreted ID"></select></label><label>with ID <select class="pg-swap-b" aria-label="Second interpreted ID"></select></label><button type="button" data-action="swap">Announce swap</button><button type="button" data-action="undo">Undo swap</button><button type="button" data-action="reset">Reset labels</button></div><p class="pg-announcement" aria-live="polite"></p></section>
-      <section class="pg-cycle-section"><h3>Cycles after relabelling</h3><p class="pg-cycle-status"></p><div class="pg-cycles"></div><p class="pg-note">Arrows follow interpreted ID → contents. A prisoner succeeds exactly when their cycle fits the budget. Swapping IDs in one cycle splits it; swapping across cycles merges them.</p></section>`;
+      <section class="pg-cycle-section"><h3>Cycles after relabelling</h3><p class="pg-cycle-status"></p><div class="pg-cycles"></div><p class="pg-note">A cycle fits the budget when its length is at most the budget.</p></section>`;
     container.append(root);
     const find = selector => root.querySelector(selector);
     const input = find('.pg-input'), prisonerInput = find('.pg-prisoner'), budgetInput = find('.pg-budget');
@@ -135,5 +135,5 @@
     return () => { events.abort(); root.remove(); };
   }
   window.JournalWidgets = window.JournalWidgets || [];
-  window.JournalWidgets.push({ id: 'prisoners-gamble', title: 'Prisoners’ Gamble', pages: [90, 91, 92], y: 0.46, mount });
+  window.JournalWidgets.push({ id: 'prisoners-gamble', title: 'Prisoners’ Gamble', pages: [90, 91, 92, 93, 94, 95], badge: { page: 92, y: 323 / 1331, offsetY: 64 }, mount });
 })();

@@ -66,6 +66,15 @@ Run `node scripts/check_lift_model.cjs` for exhaustive small-building checks and
 `node scripts/check_lift_browser.cjs` for desktop/mobile integration checks
 (requires Playwright and the local preview; screenshots go to ignored `tmp/`).
 
+Faultline of the Earthquake has one four-part exploration lab on page 58:
+draw, shorten and smoothly rotate routes; test your own paths against a sensor's
+reading; discover the hexagon's corner observation using generated valid paths
+and optional corner highlighting; then step through top-to-bottom corner DP.
+The DP includes solvable and conflicting examples, editable grid/sensor data,
+and a selectable reachability trace. Run `node scripts/check_faultline_model.cjs`
+for geometry and brute-force DP checks and `node scripts/check_faultline_browser.cjs`
+for desktop/mobile interaction checks (requires Playwright and the local preview).
+
 Widgets register with `window.JournalWidgets` and provide `id`, `title`,
 `pages` (the zero-based source-PDF chapter scope), `badge` (the one deliberate
 `{ page, y, offsetY? }` Explore anchor), and `mount(container)`, which returns

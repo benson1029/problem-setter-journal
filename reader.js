@@ -83,6 +83,11 @@
   let solutionPosition = null, solutionDrag = null;
   let openErratum = null, errataPosition = null, errataDrag = null;
   let wheelDelta = 0;
+  // `page` is the printed/displayed page number (rather than the internal
+  // zero-based source index). A widget link takes precedence because its
+  // deliberate Explore anchor is the useful place to open it.
+  let applyingLocation = false;
+  let changingPage = false;
 
   if (!book) {
     status.textContent = "The reading edition has not been published yet.";
@@ -399,6 +404,30 @@
     status.textContent = "";
   }
 
+  function pageParameter(sourcePage = pagesForView()[0]) {
+    if (sourcePage === 0) return "cover";
+    if (sourcePage === 1) return "information";
+    return String(sourcePage - 1);
+  }
+
+  function pageFromParameter(value) {
+    if (value === null || value === "") return null;
+    if (value === "cover") return 0;
+    if (value === "information") return 1;
+    const displayed = Number(value);
+    if (!Number.isInteger(displayed)) return null;
+    return Math.max(2, Math.min(book.pages.length - 1, displayed + 1));
+  }
+
+  function writeLocation({ widget, sourcePage } = {}) {
+    if (applyingLocation) return;
+    const url = new URL(window.location.href);
+    url.searchParams.set("page", pageParameter(sourcePage));
+    if (widget) url.searchParams.set("widget", widget);
+    else url.searchParams.delete("widget");
+    if (url.href !== window.location.href) history.pushState({}, "", url);
+  }
+
   function settleView(view) {
     paintView(view);
     updateCoverTurnOffset(view.pages);
@@ -468,7 +497,7 @@
   async function go(direction) {
     const target = nextFocus(direction);
     if (busy || target === focus) return;
-    busy = true; updateControls();
+    busy = true; changingPage = true; updateControls();
     const usesSinglePageTurn = !isSpread;
     const currentPages = pagesForView();
     const source = isSpread && currentPages.length === 2 ? (direction > 0 ? right : left) : single;
@@ -487,7 +516,7 @@
     errataPosition = null;
     const startFocus = focus;
     focus = target;
-    let nextView;
+    let nextView, completed = false;
     try {
       nextView = await drawView({ deferPaint: true }); // Fully assemble the target before the turn, without revealing it.
       if (usesSinglePageTurn) {
@@ -531,6 +560,7 @@
       void turningLeaf.offsetWidth;
       turningLeaf.classList.add("is-turning");
       await new Promise((resolve) => turningLeaf.addEventListener("animationend", resolve, { once: true }));
+      completed = true;
     } catch (error) {
       focus = startFocus;
       status.textContent = "This page could not be assembled. Please refresh and try again.";
@@ -541,15 +571,37 @@
       turningLeaf.classList.remove("is-turning");
       turningLeaf.classList.remove("is-prepared");
       stage.classList.remove("turning-back", "turning-forward", "single-return");
-      busy = false; updateControls();
+      busy = false; changingPage = false; updateControls();
+      if (completed) writeLocation();
     }
   }
 
-  async function jumpTo(page) {
+  async function jumpTo(page, { syncLocation = true } = {}) {
     if (busy || page < 0 || page >= book.pages.length) return;
-    busy = true; updateControls(); focus = page; setZoom(1, { resetPan: true }); tocPanel.hidden = true; tocToggle.setAttribute("aria-expanded", "false");
-    try { await drawView(); } catch (error) { status.textContent = "This page could not be assembled. Please refresh and try again."; console.error(error); }
-    finally { busy = false; updateControls(); }
+    busy = true; changingPage = true; updateControls(); focus = page; setZoom(1, { resetPan: true }); tocPanel.hidden = true; tocToggle.setAttribute("aria-expanded", "false");
+    let completed = false;
+    try { await drawView(); completed = true; } catch (error) { status.textContent = "This page could not be assembled. Please refresh and try again."; console.error(error); }
+    finally {
+      busy = false; changingPage = false; updateControls();
+      if (completed && syncLocation) writeLocation();
+    }
+  }
+
+  async function applyLocation() {
+    applyingLocation = true;
+    const parameters = new URLSearchParams(window.location.search);
+    const widgetId = parameters.get("widget");
+    const widget = (window.JournalWidgets || []).find((definition) => definition.id === widgetId);
+    const requestedPage = pageFromParameter(parameters.get("page"));
+    // A widget always opens beside its one intentional Explore badge.
+    const target = widget?.badge?.page ?? widget?.pages?.[0] ?? requestedPage ?? focus;
+    try {
+      await jumpTo(target, { syncLocation: false });
+      if (widget) window.dispatchEvent(new CustomEvent("journal:open-widget", { detail: { id: widget.id } }));
+      else window.dispatchEvent(new CustomEvent("journal:close-widget"));
+    } finally {
+      applyingLocation = false;
+    }
   }
 
   function setMode() {
@@ -597,6 +649,12 @@
   tocToggle.addEventListener("click", () => { tocPanel.hidden = !tocPanel.hidden; tocToggle.setAttribute("aria-expanded", String(!tocPanel.hidden)); });
   tocClose.addEventListener("click", () => { tocPanel.hidden = true; tocToggle.setAttribute("aria-expanded", "false"); });
   tocPanel.addEventListener("click", (event) => { const button = event.target.closest("button[data-page]"); if (button) jumpTo(Number(button.dataset.page)); });
+  window.addEventListener("journal:widget-open", (event) => {
+    if (!applyingLocation) writeLocation({ widget: event.detail?.id, sourcePage: event.detail?.page });
+  });
+  window.addEventListener("journal:widget-close", () => {
+    if (!applyingLocation && !changingPage) writeLocation();
+  });
   solutionLayer.addEventListener("click", (event) => {
     // Rendering the overlay replaces the clicked node. Stop the event here so
     // it cannot then be mistaken for a page-edge click by the book stage.
@@ -706,6 +764,7 @@
     errataDrag = null;
   });
   window.addEventListener("resize", () => { setMode(); if (!busy) { renderLinks(pagesForView()); renderSolutions(pagesForView()); renderErrata(pagesForView()); } });
+  window.addEventListener("popstate", () => { void applyLocation(); });
   isSpread = window.innerWidth > 720;
-  drawView().catch((error) => { status.textContent = "This page could not be assembled. Please refresh and try again."; console.error(error); });
+  applyLocation().catch((error) => { status.textContent = "This page could not be assembled. Please refresh and try again."; console.error(error); });
 })();

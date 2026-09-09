@@ -101,6 +101,17 @@ the modal, keyboard isolation, resizing, and page badges. Optional `offsetY`
 adds a screen-space offset to avoid another badge. Displayed page numbers
 are two less than physical PDF page numbers.
 
+### Reader links
+
+The reading edition accepts shareable URL parameters. `reader.html?page=72`
+opens displayed page 72 (on a wide screen, its spread is shown); use
+`page=cover` or `page=information` for the front matter. A widget can be
+opened directly with its registered ID, for example
+`reader.html?widget=hanoi` or `reader.html?widget=faultline`. A widget link
+opens at its intentional Explore anchor. Normal page turns and opening or
+closing a widget update the URL, and browser back/forward restores the reader
+state.
+
 Run the Mechanical Grid rule checks with `node scripts/check_mechanical_grid.cjs`.
 The new widget rule checks are `scripts/check_undecimal.cjs`,
 `scripts/check_cargo.cjs`, and `scripts/check_prisoners.cjs` (also run with Node).

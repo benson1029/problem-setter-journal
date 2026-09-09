@@ -1,15 +1,17 @@
 (() => {
   const badges = document.createElement('div'); badges.className = 'widget-badges';
   document.body.append(badges);
-  let dialog = null, cleanup = null, opener = null, activeId = null;
-  function close() {
+  let dialog = null, cleanup = null, opener = null, activeId = null, pendingId = null;
+  function close({ notify = true, restoreFocus = true } = {}) {
     if (!dialog) return;
+    const closedId=activeId;
     cleanup?.(); cleanup=null;
     dialog.close(); dialog.remove(); dialog=null; activeId=null;
-    if (opener?.isConnected) opener.focus();
+    if (restoreFocus && opener?.isConnected) opener.focus();
+    if (notify) window.dispatchEvent(new CustomEvent('journal:widget-close',{detail:{id:closedId}}));
   }
   function open(definition, button) {
-    close(); opener=button; activeId=definition.id;
+    close({notify:false,restoreFocus:false}); opener=button; activeId=definition.id;
     dialog=document.createElement('dialog'); dialog.className='widget-dialog';
     dialog.setAttribute('aria-labelledby','widget-title');
     const header=document.createElement('header'); header.className='widget-header';
@@ -60,7 +62,21 @@
     const observer=new ResizeObserver(constrain); observer.observe(panel);
     const widgetCleanup=cleanup;
     cleanup=()=>{observer.disconnect();widgetCleanup?.();};
+    window.dispatchEvent(new CustomEvent('journal:widget-open',{detail:{id:definition.id,page:(definition.badge||{}).page}}));
   }
+  function openPending() {
+    if (!pendingId) return;
+    const definition=(window.JournalWidgets||[]).find(item=>item.id===pendingId);
+    const button=badges.querySelector(`[data-widget-id="${pendingId}"]`);
+    if (!definition || !button) return;
+    pendingId=null;
+    open(definition,button);
+  }
+  window.addEventListener('journal:open-widget',event=>{
+    pendingId=event.detail?.id||null;
+    openPending();
+  });
+  window.addEventListener('journal:close-widget',()=>close());
   window.addEventListener('journal:view', event => {
     const {pages, canvases, hidden=false}=event.detail;
     if(hidden) { badges.hidden=true; close(); return; }
@@ -77,6 +93,7 @@
       {
         const rect=canvases[index].getBoundingClientRect();
         const button=document.createElement('button'); button.type='button'; button.className='widget-badge';
+        button.dataset.widgetId=definition.id;
         const icon=document.createElement('span'); icon.textContent='▷'; icon.setAttribute('aria-hidden','true');
         button.append(icon,'Explore'); button.title=definition.title;
         button.setAttribute('aria-label',`Explore ${definition.title}`);
@@ -89,5 +106,6 @@
         button.addEventListener('click',()=>open(definition,button)); badges.append(button);
       }
     });
+    openPending();
   });
 })();

@@ -75,6 +75,24 @@ and a selectable reachability trace. Run `node scripts/check_faultline_model.cjs
 for geometry and brute-force DP checks and `node scripts/check_faultline_browser.cjs`
 for desktop/mobile interaction checks (requires Playwright and the local preview).
 
+Piston has an exploration widget on page 62. Its Simulation tab animates permanent
+south-facing and temporary east-facing pistons, with editable examples. The
+optional Solution tab pairs the physical grid with its boolean array, showing
+the permanent scan or temporary DFS stack before moving the group. Play, pause,
+step and speed controls support inspecting the algorithm. Run
+`node scripts/check_piston_model.cjs` and `node scripts/check_piston_browser.cjs`
+for model and desktop/mobile checks.
+
+Challenge of Hanoi has a widget on page 72. Arrange disks by dragging or enter
+the rods as text, then select a recursion-tree node or starting command. The
+second tab builds a segment tree from command visibility, displaying symbolic
+disk rearrangements and size constraints within its nodes and in a detailed
+before/after view. Both tabs apply valid subtrees and descend into failed ones;
+rod state persists between executions. Examples reproduce the book's five
+operations and its net-effect abstraction. The visualizer supports N=1–5 and
+up to nine distinct disks. Run `node scripts/check_hanoi_model.cjs` and
+`node scripts/check_hanoi_browser.cjs` for independent model and browser checks.
+
 Widgets register with `window.JournalWidgets` and provide `id`, `title`,
 `pages` (the zero-based source-PDF chapter scope), `badge` (the one deliberate
 `{ page, y, offsetY? }` Explore anchor), and `mount(container)`, which returns

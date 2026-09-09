@@ -8,7 +8,7 @@ const { chromium } = require('playwright');
     const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
     const errors = []; page.on('pageerror', error => errors.push(error.message));
     await page.goto(process.env.READER_URL || 'http://127.0.0.1:8765/reader.html');
-    await page.waitForFunction(() => window.JournalWidgets?.length >= 10);
+    await page.waitForFunction(() => window.JournalWidgets?.length >= 12);
     const result = await page.evaluate(() => {
       const definitions = window.JournalWidgets;
       const rect = { left: 100, top: 50, width: 300, height: 500, right: 400, bottom: 550 };

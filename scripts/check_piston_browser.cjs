@@ -1,0 +1,60 @@
+const assert=require('node:assert/strict');
+const {chromium}=require('playwright');
+const fs=require('node:fs');
+const path=require('node:path');
+(async()=>{
+  const browser=await chromium.launch({channel:'msedge',headless:true});
+  const out=path.resolve(__dirname,'../tmp/piston-qa');fs.mkdirSync(out,{recursive:true});
+  try {
+    for(const width of process.env.PISTON_WIDTH?[Number(process.env.PISTON_WIDTH)]:[1280,390,320]) {
+      const page=await browser.newPage({viewport:{width,height:940}}),errors=[];
+      page.on('pageerror',e=>errors.push(e.message));
+      await page.goto('http://127.0.0.1:8765/reader.html');
+      await page.locator('#toc-toggle').click();await page.locator('#toc-panel [data-page="63"]').click();
+      await page.getByRole('button',{name:'Explore Piston',exact:true}).click();
+      const root=page.locator('.pi-widget'), q=name=>root.locator(`[data-pi="${name}"]`);
+      const snap=async name=>{assert(await page.locator('.widget-body').evaluate(el=>el.scrollWidth<=el.clientWidth+1));await page.screenshot({path:path.join(out,`${name}-${width}.png`)});};
+      await snap('simulation');
+      assert(await q('algorithm').isHidden());
+      await q('solution').click();await q('step').click();
+      assert.match(await q('status').textContent(),/\(3, 4\) = T/);
+      assert.equal(await q('array').locator('.is-current').getAttribute('data-cell'),'3,4');
+      await snap('scan');
+      await page.emulateMedia({reducedMotion:'reduce'});
+      await q('play').click();await page.waitForFunction(()=>document.querySelector('[data-pi=status]').textContent.startsWith('Extended permanently'));
+      assert.equal(await q('array').locator('[data-cell="6,4"] text').textContent(),'T');
+      assert.equal(await q('array').locator('.is-current').getAttribute('data-cell'),'6,4');
+      assert.equal(await q('board').locator('.pi-head').count(),1);
+      await snap('extended');
+      assert(await q('play').isDisabled());
+      await q('preset').selectOption('1');await q('step').click();await q('step').click();
+      assert.match(await q('status').textContent(),/Visit \(5, 3\)/);
+      assert.match(await q('stack').textContent(),/\(5, 3\)/);
+      for(let i=0;i<8;i++)await q('step').click();
+      await snap('dfs');
+      await q('play').click();await page.waitForFunction(()=>document.querySelector('[data-pi=status]').textContent.startsWith('Retracted.'));
+      assert.equal(await q('board').locator('[data-id=p1]').getAttribute('transform'),'translate(140,172)');
+      assert.equal(await q('board').locator('[data-id=p8]').getAttribute('transform'),'translate(68,136)');
+      assert.equal(await q('board').locator('.pi-head').count(),0);
+      assert(await q('play').isEnabled());
+      await q('edit').click();await q('empty').click();
+      await q('board').locator('[data-cell="2,2"]').click();
+      await q('brush').selectOption('temporary');await q('board').locator('[data-cell="3,2"]').click();
+      await q('edit').click();assert.equal(await q('board').locator('.pi-piece').count(),2);
+      await q('simulation').click();await page.emulateMedia({reducedMotion:'no-preference'});
+      await q('play').click();
+      await page.waitForFunction(()=>document.querySelector('[data-pi=board]').getAnimations({subtree:true}).length>0);
+      await q('play').click();
+      const paused=await q('board').evaluate(el=>el.getAnimations({subtree:true}).map(a=>({time:a.currentTime,state:a.playState})));
+      assert(paused.length>0&&paused.every(a=>a.state==='paused'));
+      await snap('motion-paused');
+      await q('play').click();
+      await q('reset').click();assert.equal(await q('board').locator('.pi-head').count(),0);
+      await q('play').click();
+      await page.getByRole('button',{name:'Close interactive widget',exact:true}).click();
+      await page.getByRole('button',{name:'Explore Piston',exact:true}).click();
+      assert.equal(await page.locator('.pi-piece').count(),5);
+      assert.deepEqual(errors,[]);await page.close();console.log(`Piston ${width}px: simulation, scan, DFS, editor, animation cancellation and reopen passed.`);
+    }
+  }finally{await browser.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});

@@ -93,6 +93,42 @@ operations and its net-effect abstraction. The visualizer supports N=1–5 and
 up to nine distinct disks. Run `node scripts/check_hanoi_model.cjs` and
 `node scripts/check_hanoi_browser.cjs` for independent model and browser checks.
 
+A second **Introvert Seating** widget on page 83 explores the later solution
+with 1–512 seats. Open it directly with
+`reader.html?widget=introvert-seating-dp`. Its first tab builds the sorted
+distance array as distance/frequency pairs; its second checks whether seat Y
+can have the distance K required by arrival X, for a chosen first seat.
+Both tabs provide step/back/play/pause, speed, restart and finish controls,
+plus a memoization toggle. Click a recursion call to inspect its interval;
+cached calls link back to the reused state. Large rooms use grouped seat
+ticks and a magnified interval view. Recursion is drawn as a branching tree
+with persistent nodes, highlighted active paths, and a camera that follows
+playback without scrolling the modal. Drag to pan, use the tree zoom controls,
+or choose Fit tree / Active node to switch between overview and detail.
+The target search explores both tied
+centers even after finding a Yes, so overlapping subproblems remain visible.
+Run `node scripts/check_seating_dp.cjs` for exhaustive small-case checks and
+`node scripts/check_seating_dp_browser.cjs` for desktop/mobile checks.
+
+**Tree Speculation** has four linked solution views with deliberate entry points:
+
+- Page 96: `reader.html?widget=tree-speculation-binary` — existence checks,
+  binary-search candidates, the recovered partial tree and unmatched pool.
+- Page 97: `reader.html?widget=tree-speculation-dfs` — preorder reconstruction,
+  the open DFS path, permanent exits and the `2N−2` query bound.
+- Page 99: `reader.html?widget=tree-speculation-chain` — Bob's animated walk
+  on a 2-, 4- or 5-vertex core, with an optional five-move decoding game.
+  Only observed attachments are shown; remaining attachments are inferred
+  once only one core is unvisited. Core labels/order are fixed in this demo.
+- Page 101: `reader.html?widget=tree-speculation` — combine an adjustable
+  preorder prefix with binary search and share the exit-query budget.
+
+The reconstruction views support 2–24 vertices, the book's A–L example,
+generated tree shapes, and a validated edge-list editor. All views have
+step/back/play/pause, speed, finish and clickable history. Revealing the hidden
+tree is optional and off by default. Run `node scripts/check_tree_speculation.cjs`
+and `node scripts/check_tree_speculation_browser.cjs` for model and browser QA.
+
 Widgets register with `window.JournalWidgets` and provide `id`, `title`,
 `pages` (the zero-based source-PDF chapter scope), `badge` (the one deliberate
 `{ page, y, offsetY? }` Explore anchor), and `mount(container)`, which returns

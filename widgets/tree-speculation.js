@@ -9,6 +9,8 @@
       <div class="ts-tabs" role="tablist" aria-label="Tree Speculation strategies">
         <button data-ts="binary" role="tab">1 · Binary search</button><button data-ts="amortized" role="tab">2 · Amortized DFS</button><button data-ts="chain" role="tab">3 · Bob’s walk</button><button data-ts="hybrid" role="tab">4 · Combine</button>
       </div><p class="ts-intro" data-ts="intro"></p>
+      <label class="ts-walk-variant" data-ts="walk-variant-label" hidden>Bob’s challenge<select data-ts="walk-variant"><option value="basic">Known chain · fixed IDs</option><option value="extended">Extended · hidden group & permuted IDs</option></select></label>
+      <div data-ts="extended-host" hidden></div>
       <div data-ts="tree-setup" class="ts-setup">
         <label>Tree<select data-ts="example"><option value="book">Book example · A–L</option><option value="random">Random tree</option><option value="balanced">Balanced tree</option><option value="star">Star</option><option value="chain">Long path</option></select></label>
         <label>Size<input data-ts="size" type="number" min="2" max="24" value="12"></label><button data-ts="generate">New case</button>
@@ -55,7 +57,7 @@
     const q=name=>root.querySelector(`[data-ts="${name}"]`),abort=new AbortController(),on=(el,type,fn)=>el.addEventListener(type,fn,{signal:abort.signal});
     const graph=new window.TreeSpeculationGraph(q('graph'));
     let mode=initial,t=M.preset(),seed=73,trace,cursor=0,timer=null,disposed=false;
-    let c=M.chain(),start=8,path=[8],route=[],bob=null,travelTimer=null,traveling=false;
+    let c=M.chain(),start=8,path=[8],route=[],bob=null,travelTimer=null,traveling=false,extendedCleanup=null;
     function stop(){clearTimeout(timer);timer=null;q('play').textContent='▶ Play';}
     function updateTreeEditor(){q('edges').value=t.edges.map(([u,v])=>`${t.labels[u]} ${t.labels[v]}`).join('\n');q('size').value=t.n;q('prefix').max=t.n;q('prefix').value=Math.min(Number(q('prefix').value)||1,t.n);}
     function reset(){stop();clearTimeout(travelTimer);traveling=false;cursor=0;graph.reset();if(mode==='chain'){path=[start];route=M.chainRoute(c,start);buildChainScene();}else trace=M.reconstruct(t,mode,Number(q('prefix').value));render();}
@@ -65,7 +67,16 @@
       q('prefix-label').hidden=mode!=='hybrid';q('preorder-section').hidden=mode==='binary';
       q('intro').textContent={binary:'Find one neighbor at a time. Keep the partial tree and unmatched pool separate.',amortized:'Use the next preorder label. A No exits the current vertex; a Yes adds a child.',chain:'Visit four of five core vertices in at most five moves. Infer attachments to the last one.',hybrid:'Build a preorder prefix, then continue from its open path using binary search.'}[mode];
       q('notes').textContent={binary:'Before binary searching, ask whether the current vertex has any unmatched neighbor. A No ends this vertex immediately. Otherwise repeatedly test half the candidate pool. Even a No is useful: an unmatched neighbor is already known to exist, so keep the other half. Attach the last candidate, descend, and continue. This takes O(N log N) queries without Alice’s preorder.',amortized:'A preorder tells us when a vertex enters DFS, but not when its ancestors exit. Query the next preorder vertex against the top of the open path. Every Yes recovers one of N−1 edges. Every No permanently pops one vertex, which can never be popped again. Thus there are at most 2N−2 queries; we stop without extra queries when the pool is empty.',chain:'Core labels and chain order are public in this demonstration. Bob sees only his current neighbors. Starting on a leaf uses one move to reach the core. Four visited core vertices reveal all their attached leaves; every still-unseen leaf must attach to the fifth. Starting at the center needs a U-turn. The book additionally encodes information using the core’s label group and permutations; this tab isolates the five-move decoding insight.',hybrid:'Keep the DFS path at the end of the prefix. Every vertex already exited is finished forever, while open vertices still have their one possible exit query available. Continue finding unmatched children from this path. Successful prefix queries cost X−1; remaining children cost existence checks and binary probes. Exit queries across both phases total at most N−1. No answers inside a binary search are probes, not DFS exits.'}[mode];
-      q('graph-title').textContent=walk?'Alice’s message tree · Bob’s knowledge':'Bob’s partial tree';reset();
+      q('graph-title').textContent=walk?'Alice’s message tree · Bob’s knowledge':'Bob’s partial tree';syncWalkVariant();
+    }
+    function syncWalkVariant(){
+      extendedCleanup?.();extendedCleanup=null;stop();clearTimeout(travelTimer);traveling=false;
+      const extended=mode==='chain'&&q('walk-variant').value==='extended';
+      q('walk-variant-label').hidden=mode!=='chain';q('extended-host').hidden=!extended;
+      for(const selector of [':scope > .ts-playback',':scope > .ts-workspace',':scope > .ts-notes'])root.querySelector(selector).hidden=extended;
+      q('status').hidden=extended;q('chain-setup').hidden=mode!=='chain'||extended;
+      if(extended){root.dataset.mode='chain';root.dataset.finished='false';q('intro').textContent='Decode Alice’s message in five moves, without knowing the chain’s group or order in advance.';extendedCleanup=window.mountBobExtended(q('extended-host'));}
+      else reset();
     }
     function chip(u,classes=''){return `<span class="ts-chip ${classes}">${t.labels[u]}</span>`;}
     function renderTree(){const s=trace.events[cursor];
@@ -116,6 +127,7 @@
     function step(){if(disposed)return;if(mode==='chain'){if(q('game').checked||path.length>=route.length||M.observe(c,path).solved){stop();return;}path.push(route[path.length]);}else if(cursor<trace.events.length-1)cursor++;render();if(q('step').disabled)stop();}
     function tick(){step();if(!q('step').disabled&&!disposed)timer=setTimeout(tick,Number(q('speed').value));}
     for(const name of ['binary','amortized','chain','hybrid'])on(q(name),'click',()=>chooseMode(name));
+    on(q('walk-variant'),'change',syncWalkVariant);
     on(q('reset'),'click',reset);on(q('step'),'click',()=>{stop();step();});
     on(q('back'),'click',()=>{stop();if(mode==='chain')path.pop();else cursor=Math.max(0,cursor-1);render();});
     on(q('play'),'click',()=>{if(timer!==null)stop();else{q('play').textContent='Ⅱ Pause';tick();}});
@@ -132,7 +144,7 @@
     on(q('local'),'click',e=>{const button=e.target.closest('[data-move]');if(!button||button.disabled||!q('game').checked)return;const u=Number(button.dataset.move);if(c.neighbors(path.at(-1)).includes(u)&&path.length<=5){path.push(u);traveling=true;render();clearTimeout(travelTimer);travelTimer=setTimeout(()=>{traveling=false;if(!disposed&&mode==='chain')render();},Math.min(400,Number(q('speed').value)*.75));}});
     on(q('history'),'click',e=>{const event=e.target.closest('[data-event]'),walk=e.target.closest('[data-walk-event]');stop();if(event)cursor=Number(event.dataset.event);if(walk)path=path.slice(0,Number(walk.dataset.walkEvent)+1);render();});
     updateTreeEditor();refreshStarts();chooseMode(initial);
-    return()=>{disposed=true;stop();clearTimeout(travelTimer);graph.destroy();abort.abort();dialog?.classList.remove('ts-dialog');root.remove();};
+    return()=>{disposed=true;stop();clearTimeout(travelTimer);extendedCleanup?.();graph.destroy();abort.abort();dialog?.classList.remove('ts-dialog');root.remove();};
   }
   window.JournalWidgets=window.JournalWidgets||[];
   // Separate deliberate anchors keep later insights away from the warm-up.

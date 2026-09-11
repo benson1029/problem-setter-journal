@@ -10,6 +10,7 @@
   const linkLayer = document.getElementById("link-layer");
   const solutionLayer = document.getElementById("solution-layer");
   const errataLayer = document.getElementById("errata-layer");
+  const judgeLayer = document.getElementById("judge-layer");
   const previous = document.getElementById("previous-page");
   const next = document.getElementById("next-page");
   const zoomOut = document.getElementById("zoom-out");
@@ -77,6 +78,26 @@
     22: [[21, null, 920, "Figure 1.8"]],
     37: [[36, null, 460, "Second example"]],
     39: [[38, null, 287, "Figure 2.4"]],
+  };
+  // [chapter label, online judge URL]. These live at the chapter heading on
+  // the rendered page rather than cluttering the reader's table of contents.
+  const judgeSlots = {
+    17: [["1.1 Ambiguous Undecimal System", "https://judge.hkoi.org/task/S231"]],
+    19: [["1.2 Arctic Technology", "https://pcoij8.ddns.net/task/1946"]],
+    24: [["1.3 Repetitive Journey", "https://pcoij8.ddns.net/task/2151"]],
+    29: [["1.4 Digit Puzzle", "https://judge.hkoi.org/task/S252"]],
+    37: [["2.1 Mechanical Grid", "https://judge.hkoi.org/task/J233"]],
+    44: [["2.2 Lift Problem", "https://judge.hkoi.org/task/PL23L"]],
+    48: [["2.3 Cargo Sorting", "https://pcoij8.ddns.net/task/2147"]],
+    53: [["2.4 Faultline of the Earthquake", "https://judge.hkoi.org/task/S254"]],
+    63: [["3.1 Piston", "https://judge.hkoi.org/task/M2412"]],
+    67: [["3.2 Exciting Auction", "https://judge.hkoi.org/task/M2523"]],
+    71: [["3.3 Challenge of Hanoi", "https://judge.hkoi.org/task/T232"]],
+    78: [["3.4 Introvert Seating", "https://judge.hkoi.org/task/T241"]],
+    87: [["4.1 Collaborative Sudoku", "https://judge.hkoi.org/task/M2332"]],
+    90: [["4.2 Prisoners’ Gamble", "https://judge.hkoi.org/task/M2352"]],
+    96: [["4.3 Tree Speculation", "https://judge.hkoi.org/task/T244"]],
+    104: [["4.4 Center of Infinity", "https://pcoij8.ddns.net/task/2278"]],
   };
   let focus = 0, isSpread = false, busy = false, zoom = 1, panX = 0, panY = 0, drag = null, edgeClickTimer = null;
   let openSolution = null;
@@ -356,6 +377,30 @@
     } }));
   }
 
+  function renderJudgeLinks(pages) {
+    judgeLayer.replaceChildren();
+    pages.forEach((page, index) => {
+      const slots = judgeSlots[page];
+      if (!slots) return;
+      const canvas = pages.length === 2 ? (index === 0 ? left : right) : single;
+      const rect = canvas.getBoundingClientRect();
+      slots.forEach(([chapter, url]) => {
+        const link = document.createElement("a");
+        link.className = "judge-trigger";
+        link.href = url; link.target = "_blank"; link.rel = "noopener noreferrer";
+        link.title = "Open online judge (login required)";
+        link.setAttribute("aria-label", `Open online judge for ${chapter}; login required`);
+        link.innerHTML = '<span class="judge-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 3h7v7m0-7-10 10M19 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"/></svg></span><span>Judge</span>';
+        const width = 54;
+        link.style.width = `${width}px`;
+        link.style.left = `${pages.length === 2 ? (index === 0 ? rect.right - width + 4 : rect.left - 4) : rect.right - width - 10}px`;
+        link.style.top = `${Math.min(rect.bottom - 64, Math.max(rect.top + 7, rect.top + rect.height * 154 / book.height - 22))}px`;
+        judgeLayer.append(link);
+      });
+    });
+    judgeLayer.hidden = false;
+  }
+
   function updateCoverTurnOffset(pages) {
     const page = pages.length === 2 ? left : single;
     const stageWidth = stage.getBoundingClientRect().width;
@@ -434,6 +479,7 @@
     renderLinks(view.pages);
     renderSolutions(view.pages);
     renderErrata(view.pages);
+    renderJudgeLinks(view.pages);
     updateControls();
     schedulePrefetch();
   }
@@ -465,7 +511,7 @@
     zoomOut.disabled = zoom <= zoomSteps[0];
     zoomIn.disabled = zoom >= zoomSteps.at(-1);
     zoomLevel.textContent = `${Math.round(zoom * 100)}%`;
-    if (!busy) { renderLinks(pagesForView()); renderSolutions(pagesForView()); renderErrata(pagesForView()); }
+    if (!busy) { renderLinks(pagesForView()); renderSolutions(pagesForView()); renderErrata(pagesForView()); renderJudgeLinks(pagesForView()); }
   }
 
   function setZoom(nextZoom, { anchor, resetPan = false } = {}) {
@@ -567,7 +613,7 @@
       console.error(error);
     } finally {
       if (nextView) settleView(nextView);
-      else { renderLinks(pagesForView()); renderSolutions(pagesForView()); renderErrata(pagesForView()); }
+      else { renderLinks(pagesForView()); renderSolutions(pagesForView()); renderErrata(pagesForView()); renderJudgeLinks(pagesForView()); }
       turningLeaf.classList.remove("is-turning");
       turningLeaf.classList.remove("is-prepared");
       stage.classList.remove("turning-back", "turning-forward", "single-return");
@@ -763,7 +809,7 @@
     errataLayer.releasePointerCapture(event.pointerId);
     errataDrag = null;
   });
-  window.addEventListener("resize", () => { setMode(); if (!busy) { renderLinks(pagesForView()); renderSolutions(pagesForView()); renderErrata(pagesForView()); } });
+  window.addEventListener("resize", () => { setMode(); if (!busy) { renderLinks(pagesForView()); renderSolutions(pagesForView()); renderErrata(pagesForView()); renderJudgeLinks(pagesForView()); } });
   window.addEventListener("popstate", () => { void applyLocation(); });
   isSpread = window.innerWidth > 720;
   applyLocation().catch((error) => { status.textContent = "This page could not be assembled. Please refresh and try again."; console.error(error); });

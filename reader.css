@@ -41,7 +41,7 @@ button { font: inherit; }
 .page-link:hover, .page-link:focus-visible { background: rgb(255 222 54 / 58%); outline: 1px solid rgb(255 230 82 / 86%); }
 .page-toc-link { position: absolute; display: block; border: 0; border-radius: 2px; padding: 0; background: transparent; cursor: pointer; pointer-events: auto; transition: background 120ms ease; }
 .page-toc-link:hover, .page-toc-link:focus-visible { background: rgb(255 222 54 / 58%); outline: 1px solid rgb(255 230 82 / 86%); }
-.solution-layer, .errata-layer { position: fixed; z-index: 6; inset: 0; pointer-events: none; }
+.solution-layer, .errata-layer, .judge-layer { position: fixed; z-index: 6; inset: 0; pointer-events: none; }
 .solution-trigger { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-width: 54px; min-height: 54px; border: 1px solid #bcc8d1; border-radius: 8px; padding: 2px; color: #344553; background: rgb(255 255 255 / 94%); box-shadow: 0 1px 4px rgb(0 0 0 / 18%); font-size: 9px; font-weight: 700; line-height: 1; cursor: pointer; pointer-events: auto; }
 .solution-icon { display: grid; flex: none; width: 25px; height: 25px; place-items: center; border-radius: 50%; color: #506d7e; background: #e5edf1; transition: color 120ms ease, background 120ms ease; }
 .solution-icon svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
@@ -52,6 +52,11 @@ button { font: inherit; }
 .errata-icon svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; }
 .errata-trigger:hover, .errata-trigger:focus-visible { border-color: #bd7a24; color: #482600; background: #fff0c5; outline: 2px solid rgb(235 181 89 / 62%); outline-offset: 1px; }
 .errata-trigger:hover .errata-icon, .errata-trigger:focus-visible .errata-icon { color: #643b00; background: #efc961; }
+.judge-trigger { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-width: 54px; min-height: 54px; border: 1px solid #b9c6d0; border-radius: 8px; padding: 2px; color: #344553; background: rgb(255 255 255 / 94%); box-shadow: 0 1px 4px rgb(0 0 0 / 18%); font-size: 9px; font-weight: 700; line-height: 1; text-decoration: none; cursor: pointer; pointer-events: auto; }
+.judge-icon { display: grid; flex: none; width: 25px; height: 25px; place-items: center; border-radius: 50%; color: #506d7e; background: #e5edf1; transition: color 120ms ease, background 120ms ease; }
+.judge-icon svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.judge-trigger:hover, .judge-trigger:focus-visible { border-color: #c7a62e; color: #382e0c; background: #fff5c8; outline: 2px solid rgb(235 205 89 / 62%); outline-offset: 1px; }
+.judge-trigger:hover .judge-icon, .judge-trigger:focus-visible .judge-icon { color: #5a4500; background: #f2d662; }
 .solution-popover, .errata-popover { position: absolute; display: flex; flex-direction: column; min-width: 280px; min-height: 160px; max-width: calc(100vw - 12px); max-height: calc(100dvh - 12px); overflow: hidden; resize: both; border: 1px solid #596675; border-radius: 5px; background: #fff; box-shadow: 0 10px 26px rgb(0 0 0 / 45%); pointer-events: auto; }
 .solution-popover-header { display: flex; flex: none; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border-bottom: 1px solid #d7dce0; color: #24313d; background: #f5f7f8; font-size: 12px; font-weight: 600; cursor: grab; touch-action: none; }
 .solution-popover-header:active { cursor: grabbing; }

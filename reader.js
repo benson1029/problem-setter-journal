@@ -1,6 +1,7 @@
 (() => {
   const book = window.__PROBLEM_SETTER_JOURNAL__;
   const stage = document.getElementById("book-stage");
+  const shell = document.querySelector(".reader-shell");
   const single = document.getElementById("single-page");
   const left = document.getElementById("left-page");
   const right = document.getElementById("right-page");
@@ -103,7 +104,8 @@
   let openSolution = null;
   let solutionPosition = null, solutionDrag = null;
   let openErratum = null, errataPosition = null, errataDrag = null;
-  let wheelDelta = 0;
+  const activePointers = new Map();
+  let pinch = null, viewFrame = 0, gestureTimer = null;
   // `page` is the printed/displayed page number (rather than the internal
   // zero-based source index). A widget link takes precedence because its
   // deliberate Explore anchor is the useful place to open it.
@@ -291,6 +293,7 @@
       });
     });
     if (!shownOpenSolution) { openSolution = null; solutionPosition = null; }
+    solutionLayer.classList.toggle("is-dialog-open", shownOpenSolution);
     solutionLayer.hidden = false;
   }
 
@@ -371,6 +374,7 @@
       });
     });
     if (!shownOpenErratum) { openErratum = null; errataPosition = null; }
+    errataLayer.classList.toggle("is-dialog-open", shownOpenErratum);
     errataLayer.hidden = false;
     window.dispatchEvent(new CustomEvent('journal:view', { detail: {
       pages, canvases: pages.length === 2 ? [left, right] : [single],
@@ -505,16 +509,23 @@
     return focus <= 1 ? 0 : focus - 2;
   }
 
-  function applyZoom() {
+  function applyZoom({ refreshOverlays = true } = {}) {
     stage.classList.toggle("is-zoomed", zoom > 1);
     stage.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
     zoomOut.disabled = zoom <= zoomSteps[0];
     zoomIn.disabled = zoom >= zoomSteps.at(-1);
     zoomLevel.textContent = `${Math.round(zoom * 100)}%`;
-    if (!busy) { renderLinks(pagesForView()); renderSolutions(pagesForView()); renderErrata(pagesForView()); renderJudgeLinks(pagesForView()); }
+    if (refreshOverlays && !busy) refreshOverlaysForCurrentView();
   }
 
-  function setZoom(nextZoom, { anchor, resetPan = false } = {}) {
+  function refreshOverlaysForCurrentView() {
+    renderLinks(pagesForView());
+    renderSolutions(pagesForView());
+    renderErrata(pagesForView());
+    renderJudgeLinks(pagesForView());
+  }
+
+  function setZoom(nextZoom, { anchor, resetPan = false, refreshOverlays = true } = {}) {
     const next = Math.max(zoomSteps[0], Math.min(zoomSteps.at(-1), nextZoom));
     if (resetPan || next === zoomSteps[0]) {
       panX = 0; panY = 0;
@@ -531,13 +542,78 @@
       panY = point.y - originY - pageY * next;
     }
     zoom = next;
-    applyZoom();
+    applyZoom({ refreshOverlays });
   }
 
   function changeZoom(direction, anchor) {
-    const current = zoomSteps.findIndex((step) => step >= zoom - .01);
-    const nextIndex = Math.max(0, Math.min(zoomSteps.length - 1, current + direction));
-    setZoom(zoomSteps[nextIndex], { anchor });
+    const steps = direction > 0 ? zoomSteps : [...zoomSteps].reverse();
+    const next = steps.find((step) => direction > 0 ? step > zoom + .01 : step < zoom - .01) ?? (direction > 0 ? zoomSteps.at(-1) : zoomSteps[0]);
+    setZoom(next, { anchor });
+  }
+
+  function scheduleViewTransform() {
+    if (viewFrame) return;
+    viewFrame = requestAnimationFrame(() => {
+      viewFrame = 0;
+      applyZoom({ refreshOverlays: false });
+    });
+  }
+
+  function startGesture() {
+    clearTimeout(gestureTimer);
+    shell.classList.add("is-gesturing");
+    document.body.classList.add("is-reader-gesturing");
+  }
+
+  function finishGesture() {
+    clearTimeout(gestureTimer);
+    gestureTimer = null;
+    if (viewFrame) {
+      cancelAnimationFrame(viewFrame);
+      viewFrame = 0;
+    }
+    applyZoom({ refreshOverlays: false });
+    shell.classList.remove("is-gesturing");
+    document.body.classList.remove("is-reader-gesturing");
+    if (!busy) refreshOverlaysForCurrentView();
+  }
+
+  function finishWheelGestureSoon() {
+    startGesture();
+    clearTimeout(gestureTimer);
+    gestureTimer = window.setTimeout(finishGesture, 130);
+  }
+
+  function pinchState() {
+    const [first, second] = [...activePointers.values()];
+    const center = { x: (first.x + second.x) / 2, y: (first.y + second.y) / 2 };
+    const bounds = stage.getBoundingClientRect();
+    // The visual centre includes the translation, while the transform origin
+    // remains at the untransformed stage centre.
+    const origin = { x: bounds.left + bounds.width / 2 - panX, y: bounds.top + bounds.height / 2 - panY };
+    return {
+      distance: Math.hypot(second.x - first.x, second.y - first.y),
+      center,
+      origin,
+      content: { x: (center.x - origin.x - panX) / zoom, y: (center.y - origin.y - panY) / zoom },
+      zoom,
+    };
+  }
+
+  function updatePinch() {
+    if (!pinch || activePointers.size < 2) return;
+    const [first, second] = [...activePointers.values()];
+    const center = { x: (first.x + second.x) / 2, y: (first.y + second.y) / 2 };
+    const distance = Math.hypot(second.x - first.x, second.y - first.y);
+    if (!distance || !pinch.distance) return;
+    const next = Math.max(zoomSteps[0], Math.min(zoomSteps.at(-1), pinch.zoom * distance / pinch.distance));
+    if (next === zoom) return;
+    // Keep the document location initially held between the two fingers under
+    // their live midpoint; this matches ordinary pinch-zoom behaviour.
+    panX = center.x - pinch.origin.x - pinch.content.x * next;
+    panY = center.y - pinch.origin.y - pinch.content.y * next;
+    zoom = next;
+    scheduleViewTransform();
   }
 
   async function go(direction) {
@@ -555,6 +631,9 @@
     linkLayer.hidden = true;
     solutionLayer.hidden = true;
     errataLayer.hidden = true;
+    judgeLayer.hidden = true;
+    solutionLayer.classList.remove("is-dialog-open");
+    errataLayer.classList.remove("is-dialog-open");
     window.dispatchEvent(new CustomEvent('journal:view', { detail: { hidden: true } }));
     openSolution = null;
     solutionPosition = null;
@@ -670,12 +749,17 @@
     setZoom(zoom === 1 ? 1.75 : 1, zoom === 1 ? { anchor: { x: event.clientX, y: event.clientY } } : { resetPan: true });
   });
   stage.addEventListener("wheel", (event) => {
+    // Chromium exposes a laptop trackpad pinch as a Ctrl-wheel gesture.
+    // Keep ordinary two-finger scrolling out of the zoom path, and use the
+    // native-style exponential curve rather than discrete button steps.
+    if (!event.ctrlKey || busy) return;
     event.preventDefault();
-    if (busy) return;
-    wheelDelta += event.deltaY;
-    if (Math.abs(wheelDelta) < 40) return;
-    changeZoom(wheelDelta < 0 ? 1 : -1, { x: event.clientX, y: event.clientY });
-    wheelDelta = 0;
+    const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? stage.clientHeight : 1;
+    setZoom(zoom * Math.exp(-event.deltaY * unit * .002), {
+      anchor: { x: event.clientX, y: event.clientY },
+      refreshOverlays: false,
+    });
+    finishWheelGestureSoon();
   }, { passive: false });
   stage.addEventListener("click", (event) => {
     if (event.target.closest(".page-link, .page-toc-link, .solution-layer") || zoom > 1 || busy || event.detail > 1) return;
@@ -686,9 +770,60 @@
     clearTimeout(edgeClickTimer);
     edgeClickTimer = setTimeout(() => { edgeClickTimer = null; go(direction); }, 240);
   });
-  stage.addEventListener("pointerdown", (event) => { if (!event.target.closest(".page-link, .page-toc-link, .solution-layer") && zoom > 1) { drag = { x: event.clientX, y: event.clientY, panX, panY }; stage.setPointerCapture(event.pointerId); stage.classList.add("is-panning"); } });
-  stage.addEventListener("pointermove", (event) => { if (drag) { panX = drag.panX + event.clientX - drag.x; panY = drag.panY + event.clientY - drag.y; applyZoom(); } });
-  stage.addEventListener("pointerup", () => { drag = null; stage.classList.remove("is-panning"); });
+  stage.addEventListener("pointerdown", (event) => {
+    if (event.target.closest(".page-link, .page-toc-link, .solution-layer")) return;
+    activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    stage.setPointerCapture(event.pointerId);
+    if (activePointers.size >= 2) {
+      drag = null;
+      stage.classList.remove("is-panning");
+      pinch = pinchState();
+      startGesture();
+      event.preventDefault();
+    } else if (zoom > 1) {
+      drag = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, panX, panY };
+      stage.classList.add("is-panning");
+      startGesture();
+      event.preventDefault();
+    }
+  });
+  stage.addEventListener("pointermove", (event) => {
+    const pointer = activePointers.get(event.pointerId);
+    if (!pointer) return;
+    pointer.x = event.clientX;
+    pointer.y = event.clientY;
+    if (pinch && activePointers.size >= 2) {
+      updatePinch();
+      event.preventDefault();
+    } else if (drag?.pointerId === event.pointerId) {
+      panX = drag.panX + event.clientX - drag.x;
+      panY = drag.panY + event.clientY - drag.y;
+      scheduleViewTransform();
+      event.preventDefault();
+    }
+  });
+  function endStagePointer(event) {
+    if (!activePointers.has(event.pointerId)) return;
+    activePointers.delete(event.pointerId);
+    if (stage.hasPointerCapture(event.pointerId)) stage.releasePointerCapture(event.pointerId);
+    if (pinch && activePointers.size < 2) {
+      pinch = null;
+      const remaining = activePointers.entries().next();
+      if (!remaining.done && zoom > 1) {
+        const [pointerId, pointer] = remaining.value;
+        drag = { pointerId, x: pointer.x, y: pointer.y, panX, panY };
+        stage.classList.add("is-panning");
+        return;
+      }
+    }
+    if (drag?.pointerId === event.pointerId || !activePointers.size) drag = null;
+    if (!activePointers.size) {
+      stage.classList.remove("is-panning");
+      finishGesture();
+    }
+  }
+  stage.addEventListener("pointerup", endStagePointer);
+  stage.addEventListener("pointercancel", endStagePointer);
   document.addEventListener("keydown", (event) => { if (event.key === "ArrowLeft") go(-1); if (event.key === "ArrowRight") go(1); if (event.key === "Escape" && zoom > 1) setZoom(1, { resetPan: true }); });
   document.addEventListener("contextmenu", (event) => { if (event.target.closest(".reader-shell")) event.preventDefault(); });
   document.addEventListener("dragstart", (event) => { if (event.target.closest(".reader-shell")) event.preventDefault(); });

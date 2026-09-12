@@ -2,7 +2,7 @@
 .widget-badge { position: absolute; width: 54px; min-height: 54px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border: 1px solid #90b6ad; border-radius: 8px; padding: 2px; background: #f5fffb; color: #285c51; font-size: 9px; font-weight: 700; cursor: pointer; pointer-events: auto; }
 .widget-badge span { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 50%; background: #d9eee6; font-size: 14px; }
 .widget-badge:hover, .widget-badge:focus-visible { outline: 2px solid #e4c74f; background: #fff5c8; }
-.widget-dialog { position: fixed; margin: 0; padding: 0; width: min(760px, calc(100vw - 24px)); max-width: calc(100vw - 12px); max-height: calc(100dvh - 12px); min-width: min(300px, calc(100vw - 12px)); min-height: 180px; color: #24343c; background: #fff; border: 1px solid #aebcb9; border-radius: 9px; box-shadow: 0 16px 60px #0006; overflow: hidden; }
+.widget-dialog { position: fixed; z-index: 1000; margin: 0; padding: 0; width: min(760px, calc(100vw - 24px)); max-width: calc(100vw - 12px); max-height: calc(100dvh - 12px); min-width: min(300px, calc(100vw - 12px)); min-height: 180px; color: #24343c; background: #fff; border: 1px solid #aebcb9; border-radius: 9px; box-shadow: 0 16px 60px #0006; overflow: hidden; }
 .widget-dialog[open] { display: flex; flex-direction: column; }
 .widget-dialog::backdrop { background: #07192038; }
 .widget-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex: none; padding: 10px 14px; background: #eff5f3; border-bottom: 1px solid #dbe4df; cursor: grab; touch-action: none; }

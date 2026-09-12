@@ -53,14 +53,17 @@
         </aside>
       </div>
       <details class="ts-editor" data-ts="editor"><summary>Edit the hidden tree</summary><p>One edge per line (for example A B). The first label is the root; edge order determines DFS order. 2–24 labels.</p><textarea data-ts="edges" rows="3" aria-label="Hidden tree edges"></textarea><button data-ts="apply-edges">Apply tree</button><p data-ts="error" class="ts-error" role="alert"></p></details>
+      <details class="lesson-widget lw-disclosure" data-ts="encoding" hidden><summary>Encode this preorder prefix</summary><div data-ts="codec"></div></details>
       <details class="ts-notes"><summary>Why this works</summary><p data-ts="notes"></p></details>`;
     const q=name=>root.querySelector(`[data-ts="${name}"]`),abort=new AbortController(),on=(el,type,fn)=>el.addEventListener(type,fn,{signal:abort.signal});
     const graph=new window.TreeSpeculationGraph(q('graph'));
     let mode=initial,t=M.preset(),seed=73,trace,cursor=0,timer=null,disposed=false;
-    let c=M.chain(),start=8,path=[8],route=[],bob=null,travelTimer=null,traveling=false,extendedCleanup=null;
+    let c=M.chain(),start=8,path=[8],route=[],bob=null,travelTimer=null,traveling=false,extendedCleanup=null,codecCleanup=null;
     function stop(){clearTimeout(timer);timer=null;q('play').textContent='▶ Play';}
     function updateTreeEditor(){q('edges').value=t.edges.map(([u,v])=>`${t.labels[u]} ${t.labels[v]}`).join('\n');q('size').value=t.n;q('prefix').max=t.n;q('prefix').value=Math.min(Number(q('prefix').value)||1,t.n);}
-    function reset(){stop();clearTimeout(travelTimer);traveling=false;cursor=0;graph.reset();if(mode==='chain'){path=[start];route=M.chainRoute(c,start);buildChainScene();}else trace=M.reconstruct(t,mode,Number(q('prefix').value));render();}
+    function reset(){stop();clearTimeout(travelTimer);traveling=false;cursor=0;graph.reset();if(mode==='chain'){path=[start];route=M.chainRoute(c,start);buildChainScene();}else trace=M.reconstruct(t,mode,Number(q('prefix').value));q('encoding').hidden=mode!=='hybrid';refreshCodec();render();}
+    function refreshCodec(){codecCleanup?.();codecCleanup=null;if(mode==='hybrid'&&q('encoding').open)codecCleanup=window.mountPrefixCodec(q('codec'),t.labels,t.preorder.slice(0,trace.limit));}
+    on(q('encoding'),'toggle',refreshCodec);
     function chooseMode(next){mode=next;for(const name of ['binary','amortized','chain','hybrid'])q(name).setAttribute('aria-selected',String(name===mode));const walk=mode==='chain';
       for(const name of ['chain-setup','walk','chain-graph'])q(name).hidden=!walk;
       for(const name of ['tree-setup','reconstruction','graph','editor'])q(name).hidden=walk;
@@ -70,6 +73,7 @@
       q('graph-title').textContent=walk?'Alice’s message tree · Bob’s knowledge':'Bob’s partial tree';syncWalkVariant();
     }
     function syncWalkVariant(){
+      codecCleanup?.();codecCleanup=null;q('encoding').hidden=mode!=='hybrid';
       extendedCleanup?.();extendedCleanup=null;stop();clearTimeout(travelTimer);traveling=false;
       const extended=mode==='chain'&&q('walk-variant').value==='extended';
       q('walk-variant-label').hidden=mode!=='chain';q('extended-host').hidden=!extended;
@@ -123,7 +127,7 @@
       q('history-label').textContent=game?'your walk':'demonstration';q('progress').textContent=game?'Your decisions':`${path.length} / ${route.length} visits`;
       q('back').disabled=path.length===1;q('step').disabled=q('play').disabled=q('finish').disabled=game||state.solved||path.length>=route.length;
     }
-    function render(){if(mode==='chain')renderChain();else renderTree();root.dataset.mode=mode;root.dataset.finished=String(mode==='chain'?M.observe(c,path).solved:cursor===trace.events.length-1);q('history').scrollTop=q('history').scrollHeight;}
+    function render(){if(mode==='chain')renderChain();else renderTree();root.dataset.mode=mode;root.dataset.finished=String(mode==='chain'?M.observe(c,path).solved:cursor===trace.events.length-1);const history=q('history'),active=history.querySelector('.is-current')||history.lastElementChild;if(active){const a=active.getBoundingClientRect(),h=history.getBoundingClientRect();if(a.top<h.top)history.scrollTop+=a.top-h.top;else if(a.bottom>h.bottom)history.scrollTop+=a.bottom-h.bottom;}}
     function step(){if(disposed)return;if(mode==='chain'){if(q('game').checked||path.length>=route.length||M.observe(c,path).solved){stop();return;}path.push(route[path.length]);}else if(cursor<trace.events.length-1)cursor++;render();if(q('step').disabled)stop();}
     function tick(){step();if(!q('step').disabled&&!disposed)timer=setTimeout(tick,Number(q('speed').value));}
     for(const name of ['binary','amortized','chain','hybrid'])on(q(name),'click',()=>chooseMode(name));
@@ -144,7 +148,7 @@
     on(q('local'),'click',e=>{const button=e.target.closest('[data-move]');if(!button||button.disabled||!q('game').checked)return;const u=Number(button.dataset.move);if(c.neighbors(path.at(-1)).includes(u)&&path.length<=5){path.push(u);traveling=true;render();clearTimeout(travelTimer);travelTimer=setTimeout(()=>{traveling=false;if(!disposed&&mode==='chain')render();},Math.min(400,Number(q('speed').value)*.75));}});
     on(q('history'),'click',e=>{const event=e.target.closest('[data-event]'),walk=e.target.closest('[data-walk-event]');stop();if(event)cursor=Number(event.dataset.event);if(walk)path=path.slice(0,Number(walk.dataset.walkEvent)+1);render();});
     updateTreeEditor();refreshStarts();chooseMode(initial);
-    return()=>{disposed=true;stop();clearTimeout(travelTimer);extendedCleanup?.();graph.destroy();abort.abort();dialog?.classList.remove('ts-dialog');root.remove();};
+    return()=>{disposed=true;stop();clearTimeout(travelTimer);extendedCleanup?.();codecCleanup?.();graph.destroy();abort.abort();dialog?.classList.remove('ts-dialog');root.remove();};
   }
   window.JournalWidgets=window.JournalWidgets||[];
   // Separate deliberate anchors keep later insights away from the warm-up.

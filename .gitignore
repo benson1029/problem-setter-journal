@@ -11,3 +11,4 @@ node_modules/
 
 # Internal planning notes; do not publish with the reader.
 widgets/AUDIT.md
+scripts/check_*.cjs

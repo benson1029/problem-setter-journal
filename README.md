@@ -37,8 +37,9 @@ They run completely in the browser and support direct links such as
 
 Widgets cover the journal's algorithms and games, including Mechanical Grid,
 Arctic Technology, Repetitive Journey, Digit Puzzle, Lift Problem, Cargo
-Sorting, Faultline, Piston, Challenge of Hanoi, Introvert Seating, Tree
-Speculation, and Center of Infinity. Each widget is a small local module under
+Sorting, Faultline, Piston, Exciting Auction, Challenge of Hanoi, Introvert
+Seating, Collaborative Sudoku, Prisoners’ Gamble, Tree Speculation, and Center
+of Infinity. Each widget is a small local module under
 `widgets/`; register it through `window.JournalWidgets` with a title, page
 scope, one Explore badge, and a cleanup-returning `mount` function.
 

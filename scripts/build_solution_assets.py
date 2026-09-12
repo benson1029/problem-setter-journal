@@ -19,6 +19,19 @@ from PIL import Image
 
 HEADING = re.compile(r"^P\.(\d+)$")
 
+# The entries below end far above the next heading or the bottom of their
+# companion-PDF page.  An explicit lower bound keeps a useful breathing room
+# after the last line without showing a large blank panel. P.56 also stops
+# before the next chapter title in the companion PDF.
+CROP_BOTTOM_OVERRIDES = {
+    23: 676,
+    43: 619,
+    56: 520,
+    61: 695,
+    82: 626,
+    104: 695,
+}
+
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -65,13 +78,14 @@ def main() -> None:
                 next_top = page_headings[index + 1][1] if index + 1 < len(page_headings) else page_height - 8
                 # A small leading margin keeps the problem-page label legible;
                 # horizontal margins remove the supplement's page furniture.
+                crop_bottom = min(next_top - 2, CROP_BOTTOM_OVERRIDES.get(number, next_top - 2))
                 crop = rendered.crop((
                     round(34 * scale),
                     max(0, round((top - 7) * scale)),
                     round((page_width - 34) * scale),
                     # Retain the lower leading below the final line.  This is
                     # especially important for descenders and underlines.
-                    max(1, round((next_top - 2) * scale)),
+                    max(1, round(crop_bottom * scale)),
                 ))
                 crop.save(args.output / f"p{number}.webp", "WEBP", lossless=True, method=6)
             rendered.close()

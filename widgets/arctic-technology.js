@@ -63,7 +63,7 @@
     return image;
   }
 
-  function mountRobot(container) {
+  function mountRobot(container, options = {}) {
     const events = new AbortController();
     const root = make("section", "at-root at-game");
     const intro = make("p", "at-intro", "Play blind: move, destroy one cell, and repeat.");
@@ -71,14 +71,11 @@
 
     const state = { rows: 2, columns: 2, target: [1, 1], available: new Set(), positions: new Set(), x: 1, moves: 0, history: [], log: [], turn: "move", locked: false, won: false, failure: null, failureFrame: null };
     const setup = make("div", "at-toolbar");
-    const presetLabel = make("label", "at-label", "Grid ");
-    const preset = make("select", "at-select");
-    [["book", "2 × 2"], ["wide", "3 × 4"], ["custom", "3 × 3"]].forEach(([value, label]) => {
-      const option = make("option", "", label); option.value = value; preset.append(option);
-    });
-    presetLabel.append(preset);
+    const caseHost = make("div"); root.append(caseHost);
+    let config = options.config || { rows: 2, cols: 2, target: [1, 1] };
+    options.config = config;
     const xLabel = make("label", "at-label", "Moves ");
-    const xInput = make("input", "at-number"); xInput.type = "number"; xInput.min = "1"; xInput.max = "12"; xInput.value = "1"; xInput.inputMode = "numeric";
+    const xInput = make("input", "at-number"); xInput.type = "number"; xInput.min = "1"; xInput.max = "400"; xInput.value = "1"; xInput.inputMode = "numeric";
     xLabel.append(xInput);
     const advance = make("button", "at-primary", "Move robot"); advance.type = "button";
     const undo = make("button", "", "Undo"); undo.type = "button";
@@ -86,7 +83,7 @@
     const visibilityLabel = make("label", "at-check");
     const visibility = make("input"); visibility.type = "checkbox"; visibility.checked = false; visibility.setAttribute("aria-label", "Show possible robot positions");
     visibilityLabel.append(visibility, make("span", "", "Show possible positions"));
-    setup.append(presetLabel, xLabel, advance, undo, reset, visibilityLabel); root.append(setup);
+    setup.append(xLabel, advance, undo, reset, visibilityLabel); root.append(setup);
 
     const board = make("div", "at-board"); board.setAttribute("role", "grid"); board.setAttribute("aria-label", "Arctic island grid");
     const status = make("p", "at-status"); status.setAttribute("role", "status"); status.setAttribute("aria-live", "polite"); root.append(status);
@@ -96,7 +93,8 @@
     const summary = make("summary", "", "What counts as safe?");
     note.append(summary, make("p", "at-detail-copy", "A destruction is safe only if no possible robot is on that cell."));
     const gameLayout = make("div", "at-game-layout");
-    const gameMain = make("div", "at-game-main"); gameMain.append(board, status, legend, note);
+    const boardScroll = make("div", "arctic-board-scroll"); boardScroll.tabIndex = 0; boardScroll.setAttribute("aria-label", "Scrollable Arctic grid"); boardScroll.append(board);
+    const gameMain = make("div", "at-game-main"); gameMain.append(boardScroll, status, legend, note);
     const historyPanel = make("aside", "at-history"); historyPanel.append(make("h3", "", "History"));
     const historyList = make("ol", "at-history-list"); historyPanel.append(historyList);
     gameLayout.append(gameMain, historyPanel); root.append(gameLayout);
@@ -104,15 +102,17 @@
     const failureTitle = make("h3", "at-failure-title");
     failurePanel.append(failureTitle); gameMain.append(failurePanel);
     container.append(root);
-    let failureTimer = null;
+    let failureTimer = null, replayCache = null;
+    const controls = window.ArcticSetup.mount(caseHost, config, next => { config = next; options.config = next; loadCase(); });
 
-    function loadPreset(value) {
-      const dims = value === "book" ? [2, 2, 1, 1] : value === "wide" ? [3, 4, 2, 3] : [3, 3, 2, 2];
-      state.rows = dims[0]; state.columns = dims[1]; state.target = [dims[2], dims[3]];
+    function loadCase() {
+      state.rows = config.rows; state.columns = config.cols; state.target = [...config.target];
       state.available = new Set();
       for (let r = 0; r < state.rows; r += 1) for (let c = 0; c < state.columns; c += 1) state.available.add(key(r, c));
       clearFailureReplay();
       state.positions = new Set([key(0, 0)]); state.x = 1; state.moves = 0; state.history = []; state.log = []; state.turn = "move"; state.locked = false; state.won = false; state.failure = null;
+      if (state.rows * state.columns === 1) state.won = state.locked = true;
+      boardScroll.scrollTop = boardScroll.scrollLeft = 0;
       xInput.value = "1"; render();
     }
     function save() { state.history.push(snapshot(state)); if (state.history.length > 20) state.history.shift(); }
@@ -135,6 +135,7 @@
     }
     function render() {
       board.style.setProperty("--at-columns", state.columns);
+      board.style.setProperty("--arctic-cols", state.columns);
       board.style.setProperty("--at-rows", state.rows);
       board.replaceChildren();
       const frames = state.failure ? failureFrames() : [];
@@ -158,7 +159,7 @@
         else if (showReachable) cell.append(createImage("robot.png", "at-robot", replayFrame ? "Robot in replay" : "Possible robot position"));
         if (!available && failureActive) cell.append(createImage("robot.png", "at-robot at-failure-robot", "Robot on destroyed cell"));
         cell.append(make("span", "at-coord", `${r + 1},${c + 1}`));
-        listen(events, cell, "click", () => chooseCell(value)); board.append(cell);
+        board.append(cell);
       }
       const targetKey = key(...state.target);
       const remaining = [...state.available].filter((cell) => cell !== targetKey).length;
@@ -171,7 +172,7 @@
     }
     function advanceRobot() {
       if (state.locked || state.turn !== "move") return;
-      const amount = Math.max(1, Math.min(12, Number(xInput.value) || 1));
+      const amount = Math.max(1, Math.min(400, Math.floor(Number(xInput.value)) || 1)); xInput.value = amount;
       const next = walk(state.positions, amount, state.rows, state.columns, state.available);
       save(); state.x = amount; state.moves += 1;
       if (!canCompleteMove(state.positions, amount, state.rows, state.columns, state.available) || !next.size) {
@@ -208,8 +209,12 @@
       return routes;
     }
     function pathToFailure(start, steps, available) {
+      const visited = new Set();
       function search(position, step, path) {
         if (step >= steps) return null;
+        const visitKey = `${position}|${step}`;
+        if (visited.has(visitKey)) return null;
+        visited.add(visitKey);
         const next = neighbours(parseKey(position), state.rows, state.columns, available);
         if (!next.length) return path;
         for (const [r, c] of next) {
@@ -222,6 +227,7 @@
     }
     function failureFrames() {
       if (!state.failure) return [];
+      if (replayCache?.failure === state.failure) return replayCache.frames;
       const available = new Set();
       for (let r = 0; r < state.rows; r += 1) for (let c = 0; c < state.columns; c += 1) available.add(key(r, c));
       const startFrame = { label: "Start · clean grid", kind: "start", operationIndex: null, available: new Set(available), robot: key(0, 0) };
@@ -264,7 +270,8 @@
         memo.set(memoKey, null); return null;
       }
       const route = search(0, key(0, 0), available);
-      return route ? [startFrame, ...route.frames] : [startFrame];
+      const frames = route ? [startFrame, ...route.frames] : [startFrame];
+      replayCache = { failure: state.failure, frames }; return frames;
     }
     function renderFailurePanel() {
       if (!state.failure) { failurePanel.hidden = true; return; }
@@ -277,13 +284,13 @@
       let frame = 0; state.failureFrame = frame; render();
       failureTimer = setInterval(() => { frame += 1; if (frame >= frames.length) { clearFailureReplay(); state.failureFrame = frames.length - 1; render(); return; } state.failureFrame = frame; render(); }, 650);
     }
-    listen(events, preset, "change", () => loadPreset(preset.value));
+    listen(events, board, "click", event => { const cell = event.target.closest('[data-cell]'); if (cell && !cell.disabled) chooseCell(cell.dataset.cell); });
     listen(events, advance, "click", advanceRobot);
     listen(events, undo, "click", () => { const saved = state.history.pop(); if (saved) { clearFailureReplay(); restore(state, saved); render(); } });
-    listen(events, reset, "click", () => loadPreset(preset.value));
+    listen(events, reset, "click", loadCase);
     listen(events, visibility, "change", render);
-    loadPreset("book");
-    return () => { clearFailureReplay(); events.abort(); root.remove(); };
+    loadCase();
+    return () => { clearFailureReplay(); controls.destroy(); events.abort(); root.remove(); };
   }
 
   window.JournalWidgets = window.JournalWidgets || [];

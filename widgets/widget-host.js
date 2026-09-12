@@ -26,6 +26,10 @@
     // Keep widget shortcuts and typing out of the reader's page-turn handler.
     dialog.addEventListener('keydown',event=>event.stopPropagation());
     dialog.showModal();
+    // Native modal dialogs are in the top layer, but retain an explicit
+    // stacking value for browser implementations and embedded webviews that
+    // also layer fixed reader controls above ordinary positioned elements.
+    dialog.style.zIndex='1000';
     cleanup=definition.mount(body);
     dialog.style.left=`${Math.max(6,(innerWidth-dialog.offsetWidth)/2)}px`;
     dialog.style.top=`${Math.max(6,Math.min(60,(innerHeight-dialog.offsetHeight)/2))}px`;

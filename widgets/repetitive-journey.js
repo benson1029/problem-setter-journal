@@ -130,6 +130,20 @@
       const points = runState.visits.map(visit => `${visit.col + grid[0].length * 1 + .5},${visit.row + grid.length * 1 + .5}`);
       polyline.setAttribute('points', points.join(' ')); dots.replaceChildren();
       runState.visits.slice(-1).forEach(visit => { const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); dot.setAttribute('cx', visit.col + grid[0].length + .5); dot.setAttribute('cy', visit.row + grid.length + .5); dot.setAttribute('r', '.27'); dot.classList.add('rj-current-dot'); dots.append(dot); });
+      if (runState.repeat) {
+        const { first, second, deltaRow, deltaCol } = runState.repeat;
+        const x = first.col + grid[0].length + .5, y = first.row + grid.length + .5;
+        const xx = second.col + grid[0].length + .5, yy = second.row + grid.length + .5;
+        const svg = (tag, attrs, text) => { const el = document.createElementNS('http://www.w3.org/2000/svg', tag); Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v)); if(text) el.textContent=text; dots.append(el); };
+        svg('circle', {cx:x,cy:y,r:.42,class:'rj-first-ring'});
+        if (deltaRow || deltaCol) {
+          svg('line',{x1:x,y1:y,x2:xx,y2:yy,class:'rj-drift-line'});
+          const angle=Math.atan2(yy-y,xx-x),length=.35;
+          svg('path',{d:`M${xx-length*Math.cos(angle-.5)},${yy-length*Math.sin(angle-.5)} L${xx},${yy} L${xx-length*Math.cos(angle+.5)},${yy-length*Math.sin(angle+.5)}`,class:'rj-drift-line'});
+        }
+        svg('text',{x:x+.4,y:y-.35,class:'rj-visit-label'},`#${first.step}`);
+        svg('text',{x:xx+.4,y:yy+.5,class:'rj-visit-label'},`#${second.step}`);
+      }
       root.querySelectorAll('.rj-map-current').forEach(cell => cell.classList.remove('rj-map-current'));
       const current = runState.visits.at(-1); const cell = mapGrid.querySelector(`[data-row="${current.row}"][data-col="${current.col}"]`); cell?.classList.add('rj-map-current');
     }

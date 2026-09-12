@@ -31,6 +31,7 @@
 .rj-path { position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; }
 .rj-path polyline { fill:none; stroke:#bd7b36; stroke-width:.13; stroke-linecap:round; stroke-linejoin:round; opacity:.8; }
 .rj-current-dot { fill:#a94f35; stroke:#fff; stroke-width:.08; }
+.rj-first-ring{fill:none;stroke:#29644e;stroke-width:.09}.rj-drift-line{fill:none;stroke:#29644e;stroke-width:.09;stroke-dasharray:.15 .1}.rj-visit-label{font:bold .35px system-ui;fill:#204e3c;stroke:#fff;stroke-width:.07;paint-order:stroke}
 .rj-origin-box { position:absolute; box-sizing:border-box; border:2px solid #5c8877; pointer-events:none; }
 .rj-status { min-height:2.5em; margin:12px 0 0; padding:8px 10px; border-left:3px solid #bb9c40; background:#fbf8ed; }
 .rj-trace { border-top:1px solid #dde3df; margin-top:10px; padding-top:8px; }

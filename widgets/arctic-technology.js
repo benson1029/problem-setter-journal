@@ -80,10 +80,15 @@
     const advance = make("button", "at-primary", "Move robot"); advance.type = "button";
     const undo = make("button", "", "Undo"); undo.type = "button";
     const reset = make("button", "", "Reset"); reset.type = "button";
+    const replaySpeedLabel = make("label", "at-label", "Replay speed");
+    const replaySpeed = make("select", "at-select");
+    replaySpeed.innerHTML = '<option value=".5">½×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="3">3×</option>';
+    replaySpeed.title = "Change the speed of the failure replay";
+    replaySpeedLabel.append(replaySpeed);
     const visibilityLabel = make("label", "at-check");
     const visibility = make("input"); visibility.type = "checkbox"; visibility.checked = false; visibility.setAttribute("aria-label", "Show possible robot positions");
     visibilityLabel.append(visibility, make("span", "", "Show possible positions"));
-    setup.append(xLabel, advance, undo, reset, visibilityLabel); root.append(setup);
+    setup.append(xLabel, advance, undo, reset, replaySpeedLabel, visibilityLabel); root.append(setup);
 
     const board = make("div", "at-board"); board.setAttribute("role", "grid"); board.setAttribute("aria-label", "Arctic island grid");
     const status = make("p", "at-status"); status.setAttribute("role", "status"); status.setAttribute("aria-live", "polite"); root.append(status);
@@ -104,6 +109,17 @@
     container.append(root);
     let failureTimer = null, replayCache = null;
     const controls = window.ArcticSetup.mount(caseHost, config, next => { config = next; options.config = next; loadCase(); });
+
+    function fitBoard() {
+      const width = Math.max(160, boardScroll.clientWidth - 6);
+      const height = Math.max(160, Math.min(460, Math.round(window.innerHeight * .5)));
+      const largestDimension = Math.max(state.rows, state.columns);
+      const minimum = largestDimension >= 24 ? 20 : largestDimension >= 12 ? 28 : 36;
+      const cell = Math.floor(Math.max(minimum, Math.min(96, width / state.columns, height / state.rows)));
+      board.style.setProperty("--arctic-fit-cell", `${cell}px`);
+    }
+    const boardObserver = "ResizeObserver" in window ? new ResizeObserver(fitBoard) : null;
+    boardObserver?.observe(boardScroll);
 
     function loadCase() {
       state.rows = config.rows; state.columns = config.cols; state.target = [...config.target];
@@ -169,6 +185,7 @@
       undo.disabled = !state.history.length;
       advance.disabled = state.locked || state.turn !== "move";
       renderHistory(); renderFailurePanel();
+      requestAnimationFrame(fitBoard);
     }
     function advanceRobot() {
       if (state.locked || state.turn !== "move") return;
@@ -279,18 +296,20 @@
       failureTitle.textContent = state.failure.reason === "destroyed" ? "Failure replay: destroyed cell" : "Failure replay: trapped robot";
     }
     function clearFailureReplay() { if (failureTimer) { clearInterval(failureTimer); failureTimer = null; } state.failureFrame = null; }
-    function startFailureReplay() {
+    function startFailureReplay(startAt = 0) {
       clearFailureReplay(); const frames = failureFrames(); if (!frames.length) return;
-      let frame = 0; state.failureFrame = frame; render();
-      failureTimer = setInterval(() => { frame += 1; if (frame >= frames.length) { clearFailureReplay(); state.failureFrame = frames.length - 1; render(); return; } state.failureFrame = frame; render(); }, 650);
+      let frame = Math.min(startAt, frames.length - 1); state.failureFrame = frame; render();
+      const delay = Math.round(650 / Number(replaySpeed.value));
+      failureTimer = setInterval(() => { frame += 1; if (frame >= frames.length) { clearFailureReplay(); state.failureFrame = frames.length - 1; render(); return; } state.failureFrame = frame; render(); }, delay);
     }
     listen(events, board, "click", event => { const cell = event.target.closest('[data-cell]'); if (cell && !cell.disabled) chooseCell(cell.dataset.cell); });
     listen(events, advance, "click", advanceRobot);
     listen(events, undo, "click", () => { const saved = state.history.pop(); if (saved) { clearFailureReplay(); restore(state, saved); render(); } });
     listen(events, reset, "click", loadCase);
     listen(events, visibility, "change", render);
+    listen(events, replaySpeed, "change", () => { if (failureTimer) startFailureReplay(state.failureFrame ?? 0); });
     loadCase();
-    return () => { clearFailureReplay(); controls.destroy(); events.abort(); root.remove(); };
+    return () => { clearFailureReplay(); boardObserver?.disconnect(); controls.destroy(); events.abort(); root.remove(); };
   }
 
   window.JournalWidgets = window.JournalWidgets || [];

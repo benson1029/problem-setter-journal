@@ -5,10 +5,10 @@
     ['square', '3 × 3 · centre flag', 3, 3, 2, 2],
     ['wide', '3 × 4 · inner flag', 3, 4, 2, 3],
     ['centre', '5 × 5 · centre flag', 5, 5, 3, 3],
-    ['rectangle', '6 × 10 · edge flag', 6, 10, 1, 6],
-    ['chain', '1 × 20 · middle flag', 1, 20, 1, 10],
-    ['vertical', '20 × 1 · middle flag', 20, 1, 10, 1],
-    ['long', '1 × 60 · long chain', 1, 60, 1, 30],
+    ['rectangle', '5 × 8 · edge flag', 5, 8, 1, 5],
+    ['chain', '1 × 16 · middle flag', 1, 16, 1, 8],
+    ['vertical', '16 × 1 · middle flag', 16, 1, 8, 1],
+    ['long', '1 × 28 · long chain', 1, 28, 1, 14],
   ];
   function validate(config) {
     const { rows, cols, target } = config;

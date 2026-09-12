@@ -7,6 +7,7 @@
 .at-check { display: inline-flex; align-items: center; gap: 5px; min-height: 34px; color: #546963; font-size: 12px; cursor: pointer; }
 .at-check input { width: 15px; height: 15px; margin: 0; accent-color: #6d9d89; }
 .at-game-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(130px, 170px); gap: 14px; align-items: start; }
+.widget-dialog:has(.at-root.at-game) { width: min(1080px, calc(100vw - 24px)); }
 .at-game-main { min-width: 0; }
 .at-history { border-top: 1px solid #d8e2dd; padding-top: 8px; color: #556a61; font-size: 12px; }
 .at-history h3 { margin: 0 0 7px; font-size: 13px; color: #38554a; }

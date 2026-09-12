@@ -749,10 +749,10 @@
     setZoom(zoom === 1 ? 1.75 : 1, zoom === 1 ? { anchor: { x: event.clientX, y: event.clientY } } : { resetPan: true });
   });
   stage.addEventListener("wheel", (event) => {
-    // Chromium exposes a laptop trackpad pinch as a Ctrl-wheel gesture.
-    // Keep ordinary two-finger scrolling out of the zoom path, and use the
-    // native-style exponential curve rather than discrete button steps.
-    if (!event.ctrlKey || busy) return;
+    // Chromium exposes a laptop trackpad pinch as a Ctrl-wheel gesture. Once
+    // the reader is already zoomed, an ordinary mouse wheel also zooms on the
+    // same continuous curve. At fit-page, normal scrolling remains untouched.
+    if (busy || (!event.ctrlKey && zoom <= 1)) return;
     event.preventDefault();
     const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? stage.clientHeight : 1;
     setZoom(zoom * Math.exp(-event.deltaY * unit * .002), {
